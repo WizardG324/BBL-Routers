@@ -14,19 +14,19 @@ public class RouterButtonTypes {
     public static final ButtonType ITEM_FILTER = register(new ButtonType(
             Routers.identifier("item"), 7, 31,
             "filter_buttons/item", "filter_buttons/item_hover",
-            "tooltip.routers.button.item", "tooltip.routers.menu.item", 
+            "tooltip.routers.button.item", "tooltip.routers.button.item.locked", "tooltip.routers.menu.item",
             RoutersTags.Items.ITEM_UPGRADES, ButtonType.hex("818181")));
 
     public static final ButtonType FLUID_FILTER = register(new ButtonType(
-            Routers.identifier("fluid"), 25, 31, 
+            Routers.identifier("fluid"), 25, 31,
             "filter_buttons/fluid", "filter_buttons/fluid_hover",
-            "tooltip.routers.button.fluid", "tooltip.routers.menu.fluid", 
+            "tooltip.routers.button.fluid", "tooltip.routers.button.fluid.locked", "tooltip.routers.menu.fluid",
             RoutersTags.Items.FLUID_UPGRADES, ButtonType.hex("0A61B8")));
 
     public static final ButtonType ENERGY_FILTER = register(new ButtonType(
-            Routers.identifier("energy"), 43, 31, 
+            Routers.identifier("energy"), 43, 31,
             "filter_buttons/energy", "filter_buttons/energy_hover",
-            "tooltip.routers.button.energy", "tooltip.routers.menu.energy", 
+            "tooltip.routers.button.energy", "tooltip.routers.button.energy.locked", "tooltip.routers.menu.energy",
             RoutersTags.Items.RF_UPGRADES, ButtonType.hex("B70000")));
 
     public static ButtonType register(ButtonType type) {

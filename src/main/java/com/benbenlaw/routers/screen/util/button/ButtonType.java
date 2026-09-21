@@ -13,18 +13,20 @@ public class ButtonType {
     private final String texture;
     private final String textureHover;
     private final String buttonTooltip;
+    private final String lockedTooltip;
     private final String menuName;
     private final TagKey<Item> unlockedBy;
     private final float[] color;
 
     public ButtonType(Identifier id, int xOffset, int yOffset, String texture, String textureHover,
-                      String buttonTooltip, String menuName, TagKey<Item> unlockedBy, float[] color) {
+                      String buttonTooltip, String lockedTooltip, String menuName, TagKey<Item> unlockedBy, float[] color) {
         this.id = id;
         this.xOffset = xOffset;
         this.yOffset = yOffset;
         this.texture = texture;
         this.textureHover = textureHover;
         this.buttonTooltip = buttonTooltip;
+        this.lockedTooltip = lockedTooltip;
         this.menuName = menuName;
         this.unlockedBy = unlockedBy;
         this.color = color;
@@ -36,6 +38,7 @@ public class ButtonType {
     public String getTexture() { return texture; }
     public String getTextureHover() { return textureHover; }
     public String getButtonTooltip() { return buttonTooltip; }
+    public String getLockedTooltip() { return lockedTooltip; }
     public String getMenuName() { return menuName; }
     public TagKey<Item> getUnlockedBy() { return unlockedBy; }
     public float[] getColor() { return color; }

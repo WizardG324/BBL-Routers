@@ -43,6 +43,10 @@ public class ImporterScreen extends AbstractContainerScreen<ImporterMenu> {
         updateButtons();
     }
 
+    // Unlike the Exporter, every filter button is always shown here - the upgrade it needs lives
+    // on a linked exporter rather than this block, so hiding the button when nothing's linked yet
+    // would just look like the feature doesn't exist. A locked button stays visible, dimmed, with
+    // a tooltip explaining what it's waiting on (see FilterButton.isLocked/createAlwaysVisible).
     private void updateButtons() {
         int baseX = (width - imageWidth) / 2;
         int baseY = (height - imageHeight) / 2;
@@ -51,43 +55,34 @@ public class ImporterScreen extends AbstractContainerScreen<ImporterMenu> {
         int BUTTON_SPACING = 19;
         int BUTTON_Y = 30;
 
-        long upgradeCount = RouterButtonTypes.BUTTONS.values().stream()
-                .filter(type -> menu.blockEntity.hasUpgrade(type))
-                .count();
+        int buttonCount = RouterButtonTypes.BUTTONS.size();
 
-        int totalWidth = (int) (upgradeCount * BUTTON_SPACING - (upgradeCount > 0 ? (BUTTON_SPACING - BUTTON_SIZE) : 0));
+        int totalWidth = buttonCount * BUTTON_SPACING - (buttonCount > 0 ? (BUTTON_SPACING - BUTTON_SIZE) : 0);
         int startX = baseX + (imageWidth - totalWidth) / 2 + 1;
 
         int index = 0;
 
         for (ButtonType type : RouterButtonTypes.BUTTONS.values()) {
-            boolean hasUpgrade = menu.blockEntity.hasUpgrade(type);
+            int x = startX + index * BUTTON_SPACING;
+            int y = baseY + BUTTON_Y;
 
-            if (hasUpgrade) {
-                int x = startX + index * BUTTON_SPACING;
-                int y = baseY + BUTTON_Y;
+            if (!filterButtons.containsKey(type)) {
+                FilterButton button = FilterButton.createAlwaysVisible(
+                        x, y,
+                        BUTTON_SIZE,
+                        BUTTON_SIZE,
+                        menu.blockEntity,
+                        type
+                );
 
-                if (!filterButtons.containsKey(type)) {
-                    FilterButton button = FilterButton.create(
-                            x, y,
-                            BUTTON_SIZE,
-                            BUTTON_SIZE,
-                            menu.blockEntity,
-                            type
-                    );
-
-                    if (button != null) {
-                        addRenderableWidget(button);
-                        filterButtons.put(type, button);
-                    }
-                } else {
-                    filterButtons.get(type).setPosition(x, y);
+                if (button != null) {
+                    addRenderableWidget(button);
+                    filterButtons.put(type, button);
                 }
-                index++;
-            } else if (filterButtons.containsKey(type)) {
-                removeWidget(filterButtons.get(type));
-                filterButtons.remove(type);
+            } else {
+                filterButtons.get(type).setPosition(x, y);
             }
+            index++;
         }
     }
 
@@ -97,7 +92,8 @@ public class ImporterScreen extends AbstractContainerScreen<ImporterMenu> {
 
         for (FilterButton button : filterButtons.values()) {
             if (button.isHovered()) {
-                Component buttonText = Component.translatable(button.getType().getButtonTooltip());
+                String tooltipKey = button.isLocked() ? button.getType().getLockedTooltip() : button.getType().getButtonTooltip();
+                Component buttonText = Component.translatable(tooltipKey);
 
                 List<ClientTooltipComponent> tooltipComponents = List.of(ClientTooltipComponent.create(buttonText.getVisualOrderText()));
                 guiGraphics.tooltip(

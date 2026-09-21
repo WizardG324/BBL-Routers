@@ -45,21 +45,22 @@ public class ItemTransfer {
 
                     boolean success = moveFirstBounded(source, target, start, amount, resource -> {
                         boolean isWhitelist = !entity.isBlacklist();
+                        int allowed = Integer.MAX_VALUE;
 
                         if (!ResourceHandlerUtil.isEmpty(entity.getFilterItemHandler())) {
-                            if (!checkFilter(entity.getFilterItemHandler(), resource, isWhitelist, entity.isIgnoreNbt())) {
-                                return false;
-                            }
+                            int exporterAllowed = checkFilter(entity.getFilterItemHandler(), resource, isWhitelist, entity.isIgnoreNbt());
+                            if (exporterAllowed <= 0) return 0;
+                            allowed = Math.min(allowed, exporterAllowed);
                         }
 
                         if (importer != null && !ResourceHandlerUtil.isEmpty(importer.getFilterItemHandler())) {
                             boolean importerIsWhitelist = !importer.isBlacklist();
-                            if (!checkImporterFilter(importer.getFilterItemHandler(), resource, importerIsWhitelist, importer.isIgnoreNbt(), target)) {
-                                return false;
-                            }
+                            int importerAllowed = checkImporterFilter(importer.getFilterItemHandler(), resource, importerIsWhitelist, importer.isIgnoreNbt(), target);
+                            if (importerAllowed <= 0) return 0;
+                            allowed = Math.min(allowed, importerAllowed);
                         }
 
-                        return true;
+                        return allowed;
                     });
                     moved[0] |= success;
                     return success;
@@ -95,21 +96,22 @@ public class ItemTransfer {
 
                     boolean success = moveFirstBounded(source, target, start, amount, resource -> {
                         boolean isWhitelist = !exporter.isBlacklist();
+                        int allowed = Integer.MAX_VALUE;
 
                         if (!ResourceHandlerUtil.isEmpty(exporter.getFilterItemHandler())) {
-                            if (!checkFilter(exporter.getFilterItemHandler(), resource, isWhitelist, exporter.isIgnoreNbt())) {
-                                return false;
-                            }
+                            int exporterAllowed = checkFilter(exporter.getFilterItemHandler(), resource, isWhitelist, exporter.isIgnoreNbt());
+                            if (exporterAllowed <= 0) return 0;
+                            allowed = Math.min(allowed, exporterAllowed);
                         }
 
                         boolean importerIsWhitelist = !imp.isBlacklist();
                         if (!ResourceHandlerUtil.isEmpty(imp.getFilterItemHandler())) {
-                            if (!checkImporterFilter(imp.getFilterItemHandler(), resource, importerIsWhitelist, imp.isIgnoreNbt(), target)) {
-                                return false;
-                            }
+                            int importerAllowed = checkImporterFilter(imp.getFilterItemHandler(), resource, importerIsWhitelist, imp.isIgnoreNbt(), target);
+                            if (importerAllowed <= 0) return 0;
+                            allowed = Math.min(allowed, importerAllowed);
                         }
 
-                        return true;
+                        return allowed;
                     });
                     moved[0] |= success;
                     return success;
@@ -120,7 +122,9 @@ public class ItemTransfer {
     }
 
     private interface ItemPredicate {
-        boolean test(ItemResource resource);
+        // Returns the max amount of this resource allowed to move, or <= 0 to reject it entirely.
+        // Lets a stock filter cap the move to its remaining headroom instead of only accepting/rejecting.
+        int allowedAmount(ItemResource resource);
     }
 
     private static boolean moveFirstBounded(ResourceHandler<ItemResource> source, ResourceHandler<ItemResource> target,
@@ -134,10 +138,12 @@ public class ItemTransfer {
             int slot = (start + offset) % size;
             ItemResource resource = source.getResource(slot);
             if (resource.isEmpty()) continue;
-            if (!predicate.test(resource)) continue;
+
+            int allowed = predicate.allowedAmount(resource);
+            if (allowed <= 0) continue;
 
             try (Transaction tx = Transaction.open(null)) {
-                int available = (int) Math.min(source.getAmountAsLong(slot), amount);
+                int available = (int) Math.min(Math.min(source.getAmountAsLong(slot), amount), allowed);
                 int accepted = target.insert(resource, available, tx);
 
                 if (accepted > 0 && source.extract(slot, resource, accepted, tx) > 0) {
@@ -166,7 +172,7 @@ public class ItemTransfer {
         return importer.getItemSourceCache().get(exporterLevel, exporterPos);
     }
 
-    private static boolean checkFilter(FilterItemHandler filterHandler, ItemResource resource, boolean isWhitelist, boolean ignoreNbt) {
+    private static int checkFilter(FilterItemHandler filterHandler, ItemResource resource, boolean isWhitelist, boolean ignoreNbt) {
         ItemStack incoming = resource.toStack();
         boolean hasAnyFilter = false;
         boolean foundMatch = false;
@@ -193,11 +199,11 @@ public class ItemTransfer {
             }
         }
 
-        if (!hasAnyFilter) return true;
-        return isWhitelist == foundMatch;
+        if (!hasAnyFilter) return Integer.MAX_VALUE;
+        return (isWhitelist == foundMatch) ? Integer.MAX_VALUE : 0;
     }
 
-    private static boolean checkImporterFilter(FilterItemHandler filterHandler, ItemResource resource, boolean isWhitelist, boolean ignoreNbt, @Nullable ResourceHandler<ItemResource> adjacentHandler) {
+    private static int checkImporterFilter(FilterItemHandler filterHandler, ItemResource resource, boolean isWhitelist, boolean ignoreNbt, @Nullable ResourceHandler<ItemResource> adjacentHandler) {
         ItemStack incoming = resource.toStack();
         boolean hasAnyFilter = false;
         boolean foundMatch = false;
@@ -215,9 +221,7 @@ public class ItemTransfer {
                     if (!ItemStack.isSameItemSameComponents(incoming, stock.stack())) continue;
 
                     int currentCount = countMatchingItems(adjacentHandler, stock.stack());
-                    if (currentCount >= stock.amount()) return false;
-
-                    return true;
+                    return Math.max(stock.amount() - currentCount, 0);
                 }
 
                 if (filterItem.matches(filterStack, incoming)) {
@@ -235,8 +239,9 @@ public class ItemTransfer {
             }
         }
 
-        if (!hasAnyFilter) return true;
-        return isWhitelist ? foundMatch : !foundMatch;
+        if (!hasAnyFilter) return Integer.MAX_VALUE;
+        boolean allowed = isWhitelist ? foundMatch : !foundMatch;
+        return allowed ? Integer.MAX_VALUE : 0;
     }
 
     private static int countMatchingItems(@Nullable ResourceHandler<ItemResource> handler, ItemStack target) {

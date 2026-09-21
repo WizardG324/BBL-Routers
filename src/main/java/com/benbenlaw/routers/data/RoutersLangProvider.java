@@ -73,12 +73,15 @@ public class RoutersLangProvider extends LanguageProvider {
 
         add("tooltip.routers.menu.item", "Item Filter");
         add("tooltip.routers.button.item", "Item Filter");
+        add("tooltip.routers.button.item.locked", "No connected Exporter with an Item Upgrade yet - filter can still be set");
 
         add("tooltip.routers.menu.fluid", "Fluid Filter");
         add("tooltip.routers.button.fluid", "Fluid Filter");
+        add("tooltip.routers.button.fluid.locked", "No connected Exporter with a Fluid Upgrade yet - filter can still be set");
 
         add("tooltip.routers.menu.energy", "Energy");
         add("tooltip.routers.button.energy", "Energy");
+        add("tooltip.routers.button.energy.locked", "No connected Exporter with an Energy Upgrade yet - filter can still be set");
 
         add("tooltip.routers.button.back", "Back");
 

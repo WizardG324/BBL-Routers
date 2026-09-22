@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "routers:item/fluid_upgrade_5"
+  }
+}

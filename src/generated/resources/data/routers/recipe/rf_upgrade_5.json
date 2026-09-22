@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "routers",
+  "key": {
+    "A": "#c:dusts/redstone",
+    "B": "#c:nether_stars",
+    "C": "routers:rf_upgrade_4"
+  },
+  "pattern": [
+    "ABA",
+    "BCB",
+    "ABA"
+  ],
+  "result": {
+    "id": "routers:rf_upgrade_5"
+  }
+}

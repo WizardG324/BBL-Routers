@@ -14,16 +14,19 @@ public class StartupConfig {
     public static final ModConfigSpec.ConfigValue<Integer> RFPerTick2;
     public static final ModConfigSpec.ConfigValue<Integer> RFPerTick3;
     public static final ModConfigSpec.ConfigValue<Integer> RFPerTick4;
+    public static final ModConfigSpec.ConfigValue<Integer> RFPerTick5;
 
     public static final ModConfigSpec.ConfigValue<Integer> itemPerOperation1;
     public static final ModConfigSpec.ConfigValue<Integer> itemPerOperation2;
     public static final ModConfigSpec.ConfigValue<Integer> itemPerOperation3;
     public static final ModConfigSpec.ConfigValue<Integer> itemPerOperation4;
+    public static final ModConfigSpec.ConfigValue<Integer> itemPerOperation5;
 
     public static final ModConfigSpec.ConfigValue<Integer> fluidPerOperation1;
     public static final ModConfigSpec.ConfigValue<Integer> fluidPerOperation2;
     public static final ModConfigSpec.ConfigValue<Integer> fluidPerOperation3;
     public static final ModConfigSpec.ConfigValue<Integer> fluidPerOperation4;
+    public static final ModConfigSpec.ConfigValue<Integer> fluidPerOperation5;
 
     public static final ModConfigSpec.ConfigValue<Integer> chemicalPerOperation1;
     public static final ModConfigSpec.ConfigValue<Integer> chemicalPerOperation2;
@@ -76,6 +79,10 @@ public class StartupConfig {
                 .comment("The maximum RF per tick that tier 4 can provide.")
                 .defineInRange("RF Per Operation 4", 128000, 1, Integer.MAX_VALUE);
 
+        RFPerTick5 = BUILDER
+                .comment("The maximum RF per tick that tier 5 can provide.")
+                .defineInRange("RF Per Operation 5", 250000000, 1, Integer.MAX_VALUE);
+
         BUILDER.pop();
 
         BUILDER.push("Item Upgrades");
@@ -96,6 +103,10 @@ public class StartupConfig {
                 .comment("The maximum items per operation that tier 4 can provide.")
                 .defineInRange("Items Per Operation 4", 64, 1, Integer.MAX_VALUE);
 
+        itemPerOperation5 = BUILDER
+                .comment("The maximum items per operation that tier 5 can provide.")
+                .defineInRange("Items Per Operation 5", 25000000, 1, Integer.MAX_VALUE);
+
         BUILDER.pop();
 
         BUILDER.push("Fluid Upgrades");
@@ -103,15 +114,22 @@ public class StartupConfig {
         fluidPerOperation1 = BUILDER
                 .comment("The maximum mb per operation that tier 1 can provide.")
                 .defineInRange("Fluid Per Operation 1", 100, 1, Integer.MAX_VALUE);
+
         fluidPerOperation2 = BUILDER
                 .comment("The maximum mb per operation that tier 2 can provide.")
                 .defineInRange("Fluid Per Operation 2", 1000, 1, Integer.MAX_VALUE);
+
         fluidPerOperation3 = BUILDER
                 .comment("The maximum mb per operation that tier 3 can provide.")
                 .defineInRange("Fluid Per Operation 3", 10000, 1, Integer.MAX_VALUE);
+
         fluidPerOperation4 = BUILDER
                 .comment("The maximum mb per operation that tier 4 can provide.")
                 .defineInRange("Fluid Per Operation 4", 100000, 1, Integer.MAX_VALUE);
+
+        fluidPerOperation5 = BUILDER
+                .comment("The maximum mb per operation that tier 5 can provide.")
+                .defineInRange("Fluid Per Operation 5", 250000000, 1, Integer.MAX_VALUE);
 
         BUILDER.pop();
 

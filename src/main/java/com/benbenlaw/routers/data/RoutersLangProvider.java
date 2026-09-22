@@ -23,16 +23,19 @@ public class RoutersLangProvider extends LanguageProvider {
         add("item.routers.rf_upgrade_2", "Energy Upgrade II");
         add("item.routers.rf_upgrade_3", "Energy Upgrade III");
         add("item.routers.rf_upgrade_4", "Energy Upgrade IV");
+        add("item.routers.rf_upgrade_5", "Energy Upgrade V");
 
         add("item.routers.item_upgrade_1", "Item Upgrade I");
         add("item.routers.item_upgrade_2", "Item Upgrade II");
         add("item.routers.item_upgrade_3", "Item Upgrade III");
         add("item.routers.item_upgrade_4", "Item Upgrade IV");
+        add("item.routers.item_upgrade_5", "Item Upgrade V");
 
         add("item.routers.fluid_upgrade_1", "Fluid Upgrade I");
         add("item.routers.fluid_upgrade_2", "Fluid Upgrade II");
         add("item.routers.fluid_upgrade_3", "Fluid Upgrade III");
         add("item.routers.fluid_upgrade_4", "Fluid Upgrade IV");
+        add("item.routers.fluid_upgrade_5", "Fluid Upgrade V");
 
         add("item.routers.speed_upgrade_1", "Speed Upgrade I");
         add("item.routers.speed_upgrade_2", "Speed Upgrade II");

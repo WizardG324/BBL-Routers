@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "routers",
+  "key": {
+    "A": "#c:chests/wooden",
+    "B": "#c:nether_stars",
+    "C": "routers:item_upgrade_4"
+  },
+  "pattern": [
+    "ABA",
+    "BCB",
+    "ABA"
+  ],
+  "result": {
+    "id": "routers:item_upgrade_5"
+  }
+}

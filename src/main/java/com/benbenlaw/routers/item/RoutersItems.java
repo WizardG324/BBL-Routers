@@ -26,6 +26,9 @@ public class RoutersItems {
     public static final DeferredItem<Item> RF_UPGRADE_4 = ITEMS.registerItem("rf_upgrade_4",
             properties -> new UpgradeItem(new Item.Properties().setId(createID("rf_upgrade_4")), StartupConfig.RFPerTick4.get()));
 
+    public static final DeferredItem<Item> RF_UPGRADE_5 = ITEMS.registerItem("rf_upgrade_5",
+            properties -> new UpgradeItem(new Item.Properties().setId(createID("rf_upgrade_5")), StartupConfig.RFPerTick5.get()));
+
     public static final DeferredItem<Item> ITEM_UPGRADE_1 = ITEMS.registerItem("item_upgrade_1",
             properties -> new UpgradeItem(new Item.Properties().setId(createID("item_upgrade_1")) , StartupConfig.itemPerOperation1.get()));
 
@@ -37,6 +40,9 @@ public class RoutersItems {
 
     public static final DeferredItem<Item> ITEM_UPGRADE_4 = ITEMS.registerItem("item_upgrade_4",
             properties -> new UpgradeItem(new Item.Properties().setId(createID("item_upgrade_4")) , StartupConfig.itemPerOperation4.get()));
+
+    public static final DeferredItem<Item> ITEM_UPGRADE_5 = ITEMS.registerItem("item_upgrade_5",
+            properties -> new UpgradeItem(new Item.Properties().setId(createID("item_upgrade_5")) , StartupConfig.itemPerOperation5.get()));
 
 
     public static final DeferredItem<Item> FLUID_UPGRADE_1 = ITEMS.registerItem("fluid_upgrade_1",
@@ -50,6 +56,9 @@ public class RoutersItems {
 
     public static final DeferredItem<Item> FLUID_UPGRADE_4 = ITEMS.registerItem("fluid_upgrade_4",
             properties -> new UpgradeItem(new Item.Properties().setId(createID("fluid_upgrade_4")) , StartupConfig.fluidPerOperation4.get()));
+
+    public static final DeferredItem<Item> FLUID_UPGRADE_5 = ITEMS.registerItem("fluid_upgrade_5",
+            properties -> new UpgradeItem(new Item.Properties().setId(createID("fluid_upgrade_5")) , StartupConfig.fluidPerOperation5.get()));
 
 
 

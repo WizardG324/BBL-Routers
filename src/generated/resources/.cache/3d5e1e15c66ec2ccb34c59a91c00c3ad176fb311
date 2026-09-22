@@ -1,9 +1,9 @@
-// 26.1.2	2026-09-18T15:22:43.4110819	Tags for minecraft:item mod id routers
+// 26.1.2	2026-09-22T14:30:09.494108	Tags for minecraft:item mod id routers
 31137ea53dd8d43545ae6d423a1b012ad1935bc4 data/c/tags/item/tools/wrench.json
 c730f894e2270197fd5cb894e19c23d024d93973 data/routers/tags/item/dimensional_upgrades.json
-f3956fc3da6dd7ba994e44e9a6764b4d1409debe data/routers/tags/item/fluid_upgrades.json
-d277f9227e8496c3b41d83d7ccbb7869b111a5f5 data/routers/tags/item/item_upgrades.json
-846f4628026f98cd8362f558fb7605d20ac34ee7 data/routers/tags/item/rf_upgrades.json
+bedee0ac694f6bee92ec2f0a1edf008a9146e3ed data/routers/tags/item/fluid_upgrades.json
+24552ca5b7a90c08532b78633c64b988ef3be4b2 data/routers/tags/item/item_upgrades.json
+6a0f91be2ace492c4163633819ae482a6f223e69 data/routers/tags/item/rf_upgrades.json
 5446cf4dd821d9fe464f4ef4c168a3c8a983a0cf data/routers/tags/item/round_robin_upgrades.json
 fca4dd8cde38598d0f46eb8724f5954db8952fc1 data/routers/tags/item/speed_upgrades.json
 bfcbb4a3bb9cb9c0add7bc284cf465e09d0bd40f data/routers/tags/item/upgrades.json

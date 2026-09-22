@@ -3,6 +3,7 @@
     "routers:rf_upgrade_1",
     "routers:rf_upgrade_2",
     "routers:rf_upgrade_3",
-    "routers:rf_upgrade_4"
+    "routers:rf_upgrade_4",
+    "routers:rf_upgrade_5"
   ]
 }

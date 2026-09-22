@@ -101,6 +101,8 @@ dependencies {
     runtimeOnly("curse.maven:functional-storage-556861:8723367")
     //titanium
     runtimeOnly("curse.maven:titanium-287342:8671128")
+    //Infinity Drives
+    runtimeOnly("curse.maven:infinity-drives-1386843:8339790")
 }
 
 tasks.withType(ProcessResources).configureEach {

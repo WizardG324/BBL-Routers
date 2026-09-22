@@ -89,7 +89,8 @@ public class RoutersItemTagsProvider extends ItemTagsProvider {
                 RoutersItems.RF_UPGRADE_1.get(),
                 RoutersItems.RF_UPGRADE_2.get(),
                 RoutersItems.RF_UPGRADE_3.get(),
-                RoutersItems.RF_UPGRADE_4.get()
+                RoutersItems.RF_UPGRADE_4.get(),
+                RoutersItems.RF_UPGRADE_5.get()
         );
 
         //Item Upgrades
@@ -97,7 +98,8 @@ public class RoutersItemTagsProvider extends ItemTagsProvider {
                 RoutersItems.ITEM_UPGRADE_1.get(),
                 RoutersItems.ITEM_UPGRADE_2.get(),
                 RoutersItems.ITEM_UPGRADE_3.get(),
-                RoutersItems.ITEM_UPGRADE_4.get()
+                RoutersItems.ITEM_UPGRADE_4.get(),
+                RoutersItems.ITEM_UPGRADE_5.get()
         );
 
         //Fluid Upgrades
@@ -105,7 +107,8 @@ public class RoutersItemTagsProvider extends ItemTagsProvider {
                 RoutersItems.FLUID_UPGRADE_1.get(),
                 RoutersItems.FLUID_UPGRADE_2.get(),
                 RoutersItems.FLUID_UPGRADE_3.get(),
-                RoutersItems.FLUID_UPGRADE_4.get()
+                RoutersItems.FLUID_UPGRADE_4.get(),
+                RoutersItems.FLUID_UPGRADE_5.get()
         );
 
         /*

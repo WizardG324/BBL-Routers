@@ -3,6 +3,7 @@
     "routers:item_upgrade_1",
     "routers:item_upgrade_2",
     "routers:item_upgrade_3",
-    "routers:item_upgrade_4"
+    "routers:item_upgrade_4",
+    "routers:item_upgrade_5"
   ]
 }

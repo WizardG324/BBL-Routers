@@ -3,6 +3,7 @@
     "routers:fluid_upgrade_1",
     "routers:fluid_upgrade_2",
     "routers:fluid_upgrade_3",
-    "routers:fluid_upgrade_4"
+    "routers:fluid_upgrade_4",
+    "routers:fluid_upgrade_5"
   ]
 }

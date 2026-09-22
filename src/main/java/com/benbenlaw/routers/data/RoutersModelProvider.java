@@ -31,16 +31,19 @@ public class RoutersModelProvider extends ModelProvider {
         itemModels.generateFlatItem(RoutersItems.RF_UPGRADE_2.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RoutersItems.RF_UPGRADE_3.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RoutersItems.RF_UPGRADE_4.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(RoutersItems.RF_UPGRADE_5.get(), ModelTemplates.FLAT_ITEM);
 
         itemModels.generateFlatItem(RoutersItems.ITEM_UPGRADE_1.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RoutersItems.ITEM_UPGRADE_2.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RoutersItems.ITEM_UPGRADE_3.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RoutersItems.ITEM_UPGRADE_4.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(RoutersItems.ITEM_UPGRADE_5.get(), ModelTemplates.FLAT_ITEM);
 
         itemModels.generateFlatItem(RoutersItems.FLUID_UPGRADE_1.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RoutersItems.FLUID_UPGRADE_2.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RoutersItems.FLUID_UPGRADE_3.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RoutersItems.FLUID_UPGRADE_4.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(RoutersItems.FLUID_UPGRADE_5.get(), ModelTemplates.FLAT_ITEM);
 
         itemModels.generateFlatItem(RoutersItems.SPEED_UPGRADE_1.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RoutersItems.SPEED_UPGRADE_2.get(), ModelTemplates.FLAT_ITEM);

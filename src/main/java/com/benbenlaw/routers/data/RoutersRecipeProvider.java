@@ -171,6 +171,17 @@ public class RoutersRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_netherite", has(Items.NETHERITE_INGOT))
                 .save(output);
 
+        shaped(RecipeCategory.MISC, RoutersItems.RF_UPGRADE_5.get())
+                .pattern("ABA")
+                .pattern("BCB")
+                .pattern("ABA")
+                .define('A', Tags.Items.DUSTS_REDSTONE)
+                .define('B', Tags.Items.NETHER_STARS)
+                .define('C', RoutersItems.RF_UPGRADE_4.get())
+                .group(Routers.MOD_ID)
+                .unlockedBy("has_netherite", has(Items.NETHER_STAR))
+                .save(output);
+
         //Item
         shaped(RecipeCategory.MISC, RoutersItems.ITEM_UPGRADE_1.get())
                 .pattern("ABA")
@@ -216,6 +227,17 @@ public class RoutersRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_netherite", has(Items.NETHERITE_INGOT))
                 .save(output);
 
+        shaped(RecipeCategory.MISC, RoutersItems.ITEM_UPGRADE_5.get())
+                .pattern("ABA")
+                .pattern("BCB")
+                .pattern("ABA")
+                .define('A', Tags.Items.CHESTS_WOODEN)
+                .define('B', Tags.Items.NETHER_STARS)
+                .define('C', RoutersItems.ITEM_UPGRADE_4.get())
+                .group(Routers.MOD_ID)
+                .unlockedBy("has_netherite", has(Items.NETHER_STAR))
+                .save(output);
+
         //Fluid
         shaped(RecipeCategory.MISC, RoutersItems.FLUID_UPGRADE_1.get())
                 .pattern("ABA")
@@ -259,6 +281,17 @@ public class RoutersRecipeProvider extends RecipeProvider {
                 .define('C', RoutersItems.FLUID_UPGRADE_3.get())
                 .group(Routers.MOD_ID)
                 .unlockedBy("has_netherite", has(Items.NETHERITE_INGOT))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RoutersItems.FLUID_UPGRADE_5.get())
+                .pattern("ABA")
+                .pattern("BCB")
+                .pattern("ABA")
+                .define('A', Tags.Items.BUCKETS)
+                .define('B', Tags.Items.NETHER_STARS)
+                .define('C', RoutersItems.FLUID_UPGRADE_4.get())
+                .group(Routers.MOD_ID)
+                .unlockedBy("has_netherite", has(Items.NETHER_STAR))
                 .save(output);
 
         //Speed

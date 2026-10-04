@@ -1,7 +1,6 @@
 package com.benbenlaw.routers.screen.util.button;
 
 import com.benbenlaw.routers.Routers;
-import com.benbenlaw.routers.api.ConfigurableRouterBlockEntity;
 import com.benbenlaw.routers.networking.packets.BackMenu;
 import com.benbenlaw.routers.networking.packets.OpenMenu;
 import net.minecraft.client.Minecraft;
@@ -13,7 +12,7 @@ import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 import java.util.List;
@@ -50,13 +49,8 @@ public class BackButton extends Button {
         }
     }
 
-    public static BackButton create(int x, int y, int width, int height, BlockEntity blockEntity) {
-        if (blockEntity instanceof ConfigurableRouterBlockEntity) {
-            return new BackButton(x, y, width, height, button ->
-                    ClientPacketDistributor.sendToServer(new BackMenu(blockEntity.getBlockPos())));
-
-        }
-
-        return null;
+    public static BackButton create(int x, int y, int width, int height, BlockPos blockPos) {
+        return new BackButton(x, y, width, height, button ->
+                ClientPacketDistributor.sendToServer(new BackMenu(blockPos)));
     }
 }

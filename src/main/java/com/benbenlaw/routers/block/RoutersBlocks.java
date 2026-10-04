@@ -3,7 +3,9 @@ package com.benbenlaw.routers.block;
 import com.benbenlaw.routers.Routers;
 import com.benbenlaw.routers.block.custom.DistributorBlock;
 import com.benbenlaw.routers.block.custom.ExporterBlock;
+import com.benbenlaw.routers.block.custom.ImporterExporterBlock;
 import com.benbenlaw.routers.block.custom.ImporterBlock;
+import com.benbenlaw.routers.block.custom.RouterManagerBlock;
 import com.benbenlaw.routers.item.RoutersItems;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -28,6 +30,14 @@ public class RoutersBlocks {
     public static final DeferredBlock<Block> EXPORTER = registerBlock("exporter",
             () -> new ExporterBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)
                     .noOcclusion().setId(createID("exporter"))));
+
+    public static final DeferredBlock<Block> IMPORTER_EXPORTER = registerBlock("importer_exporter",
+            () -> new ImporterExporterBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)
+                    .noOcclusion().setId(createID("importer_exporter"))));
+
+    public static final DeferredBlock<Block> ROUTER_MANAGER = registerBlock("router_manager",
+            () -> new RouterManagerBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)
+                    .setId(createID("router_manager"))));
 
     public static final DeferredBlock<Block> DISTRIBUTOR = registerBlock("distributor",
             () -> new DistributorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)

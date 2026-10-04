@@ -2,8 +2,9 @@ package com.benbenlaw.routers.api.transfers;
 
 import com.benbenlaw.routers.api.ImporterPullEngine;
 import com.benbenlaw.routers.api.TransferEngine;
+import com.benbenlaw.routers.block.entity.DistributorBlockEntity;
 import com.benbenlaw.routers.block.entity.ExporterBlockEntity;
-import com.benbenlaw.routers.block.entity.ImporterBlockEntity;
+import com.benbenlaw.routers.block.entity.ImporterCore;
 import com.benbenlaw.routers.config.StartupConfig;
 import com.benbenlaw.routers.util.RoutersTags;
 import net.minecraft.core.GlobalPos;
@@ -33,7 +34,7 @@ public class FluidTransfer {
                     ResourceHandler<FluidResource> target = getTargetHandler(srvLevel, entity, targetPos);
                     if (target == null) return false;
 
-                    ImporterBlockEntity importer = srvLevel.getBlockEntity(targetPos.pos()) instanceof ImporterBlockEntity imp ? imp : null;
+                    ImporterCore importer = ImporterCore.at(srvLevel, targetPos.pos());
 
                     int amount = entity.getUpgradeValue(RoutersTags.Items.FLUID_UPGRADES);
                     int start = entity.getFluidScanState().nextScanStart(source.size());
@@ -66,10 +67,14 @@ public class FluidTransfer {
         if (targetLevel == null || (!pos.dimension().equals(level.dimension()) && !exporter.canDoDimensionalTravel())) return null;
         if (!targetLevel.isLoaded(pos.pos())) return null;
 
+        if (targetLevel.getBlockEntity(pos.pos()) instanceof DistributorBlockEntity distributor) {
+            return distributor.getFluidDistributor();
+        }
+
         return exporter.getFluidTargetCache().get(targetLevel, pos);
     }
 
-    public static int pullFluids(ServerLevel level, ImporterBlockEntity importer) {
+    public static int pullFluids(ServerLevel level, ImporterCore importer) {
 
         if (importer.getFluidScanState().shouldSkip(level.getGameTime())) return importer.lastExporterIndex;
 
@@ -154,7 +159,7 @@ public class FluidTransfer {
     }
 
     @Nullable
-    private static ResourceHandler<FluidResource> getSourceHandler(ServerLevel importerLevel, ExporterBlockEntity exporter, ImporterBlockEntity importer, GlobalPos exporterPos) {
+    private static ResourceHandler<FluidResource> getSourceHandler(ServerLevel importerLevel, ExporterBlockEntity exporter, ImporterCore importer, GlobalPos exporterPos) {
         if (!exporterPos.dimension().equals(importerLevel.dimension()) && !exporter.canDoDimensionalTravel()) return null;
 
         ServerLevel exporterLevel = importerLevel.getServer().getLevel(exporterPos.dimension());

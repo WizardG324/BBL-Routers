@@ -4,7 +4,6 @@ import com.benbenlaw.routers.api.screen.RouterUIRegistries;
 import com.benbenlaw.routers.api.screen.client.RouterUIRenderers;
 import com.benbenlaw.routers.block.RoutersBlockEntities;
 import com.benbenlaw.routers.block.RoutersBlocks;
-import com.benbenlaw.routers.block.RoutersCapabilities;
 import com.benbenlaw.routers.block.entity.renderer.ExporterBlockEntityRenderer;
 import com.benbenlaw.routers.config.StartupConfig;
 import com.benbenlaw.routers.gametest.RoutersGameTests;
@@ -25,7 +24,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
@@ -52,7 +50,6 @@ public class Routers {
         RoutersGameTests.TEST_FUNCTIONS.register(eventBus);
 
         eventBus.addListener(this::commonSetup);
-        eventBus.addListener(this::registerCapabilities);
         eventBus.addListener(RoutersGameTests::registerTests);
 
         if (Dist.CLIENT.isClient()) {
@@ -73,23 +70,21 @@ public class Routers {
         @SubscribeEvent
         public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event) {
             event.registerBlockEntityRenderer(RoutersBlockEntities.EXPORTER_BLOCK_ENTITY.get(), ExporterBlockEntityRenderer::new);
+            event.registerBlockEntityRenderer(RoutersBlockEntities.IMPORTER_EXPORTER_BLOCK_ENTITY.get(), ExporterBlockEntityRenderer::new);
         }
 
         @SubscribeEvent
         public static void registerScreens(RegisterMenuScreensEvent event) {
             event.register(RoutersMenuTypes.EXPORTER_MENU.get(), ExporterScreen::new);
             event.register(RoutersMenuTypes.IMPORTER_MENU.get(), ImporterScreen::new);
+            event.register(RoutersMenuTypes.IMPORTER_EXPORTER_MENU.get(), ImporterExporterScreen::new);
+            event.register(RoutersMenuTypes.ROUTER_MANAGER_MENU.get(), RouterManagerScreen::new);
             event.register(RoutersMenuTypes.FILTER_MENU.get(), FilterScreen::new);
-            event.register(RoutersMenuTypes.DISTRIBUTOR_MENU.get(), DistributorScreen::new);
         }
     }
 
     private void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(RouterUIRenderers::init);
-    }
-
-    public void registerCapabilities(RegisterCapabilitiesEvent event) {
-        RoutersCapabilities.registerCapabilities(event);
     }
 
     public static Identifier identifier(String path) {

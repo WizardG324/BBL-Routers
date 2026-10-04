@@ -12,7 +12,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.level.block.entity.BlockEntity;
 
 public class FilterScreen extends AbstractContainerScreen<FilterMenu> {
 
@@ -26,7 +25,7 @@ public class FilterScreen extends AbstractContainerScreen<FilterMenu> {
     protected void init() {
         super.init();
         MousePositionManagerUtil.setLastKnownPosition();
-        addRenderableWidget(BackButton.create(getGuiLeft() + 151, getGuiTop() + 4, 20, 20, (BlockEntity) menu.blockEntity));
+        addRenderableWidget(BackButton.create(getGuiLeft() + 151, getGuiTop() + 4, 20, 20, menu.blockPos));
     }
 
     public int getGuiLeft() { return (width - imageWidth) / 2; }

@@ -40,10 +40,22 @@ public class RoutersItemTagsProvider extends ItemTagsProvider {
                 .add(RoutersItems.IGNORE_NBT_UPGRADE.get())
         ;
 
+        //Distributor Upgrades (no speed or dimensional, it never ticks and only reaches machines in its own dimension)
+        this.tag(RoutersTags.Items.DISTRIBUTOR_UPGRADES)
+                .addTag(RoutersTags.Items.ITEM_UPGRADES)
+                .addTag(RoutersTags.Items.FLUID_UPGRADES)
+                .addTag(RoutersTags.Items.RF_UPGRADES)
+                .addTag(RoutersTags.Items.ROUND_ROBIN_UPGRADES)
+
+                .add(RoutersItems.BLACKLIST_UPGRADE.get())
+                .add(RoutersItems.IGNORE_NBT_UPGRADE.get())
+        ;
+
         //All Upgrades (union, for general grouping/JEI)
         this.tag(RoutersTags.Items.UPGRADES)
                 .addTag(RoutersTags.Items.EXPORTER_UPGRADES)
                 .addTag(RoutersTags.Items.IMPORTER_UPGRADES)
+                .addTag(RoutersTags.Items.DISTRIBUTOR_UPGRADES)
         ;
 
         //Wrenches

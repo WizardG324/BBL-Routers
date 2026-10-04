@@ -13,6 +13,7 @@ public class RoutersTags {
         public static final TagKey<Item> UPGRADES = tag("upgrades");
         public static final TagKey<Item> EXPORTER_UPGRADES = tag("upgrades/exporter");
         public static final TagKey<Item> IMPORTER_UPGRADES = tag("upgrades/importer");
+        public static final TagKey<Item> DISTRIBUTOR_UPGRADES = tag("upgrades/distributor");
 
         public static final TagKey<Item> RF_UPGRADES = tag("rf_upgrades");
         public static final TagKey<Item> ITEM_UPGRADES = tag("item_upgrades");

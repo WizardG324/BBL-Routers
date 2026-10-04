@@ -32,6 +32,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -61,7 +62,7 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
     private boolean isBlacklist;
 
     private final InputItemHandler upgradeItemHandler = new InputItemHandler(this, 9, (i, stack) ->
-            stack.is(RoutersTags.Items.EXPORTER_UPGRADES) && !hasUpgradeTypeAlready(stack)) {
+            acceptsUpgrade(stack) && !hasUpgradeTypeAlready(stack)) {
         @Override
         protected int getCapacity(int index, ItemResource resource) {
             return 1;
@@ -116,7 +117,11 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
     private final ResourceScanState energyScanState = new ResourceScanState();
 
     public ExporterBlockEntity(BlockPos pos, BlockState state) {
-        super(RoutersBlockEntities.EXPORTER_BLOCK_ENTITY.get(), pos, state);
+        this(RoutersBlockEntities.EXPORTER_BLOCK_ENTITY.get(), pos, state);
+    }
+
+    protected ExporterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
         assert level != null;
         this.exporterPos = null;
         this.importerPositions = new ArrayList<>();
@@ -137,6 +142,10 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
                 return 0;
             }
         };
+    }
+
+    public boolean acceptsUpgrade(ItemStack stack) {
+        return stack.is(RoutersTags.Items.EXPORTER_UPGRADES);
     }
 
     public boolean canDoDimensionalTravel() {
@@ -343,7 +352,8 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
 
             ServerLevel importerLevel = level.getServer() != null ? level.getServer().getLevel(clickedPos.dimension()) : null;
-            if (importerLevel != null && importerLevel.getBlockEntity(clickedPos.pos()) instanceof ImporterBlockEntity importer) {
+            ImporterCore importer = ImporterCore.at(importerLevel, clickedPos.pos());
+            if (importer != null) {
                 GlobalPos thisExporterPos = GlobalPos.of(level.dimension(), this.worldPosition);
                 if (added) {
                     importer.addExporterPosition(thisExporterPos);
@@ -389,7 +399,8 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
             ServerLevel importerLevel = level.getServer().getLevel(pos.dimension());
             if (importerLevel == null || !importerLevel.isLoaded(pos.pos())) continue;
 
-            if (importerLevel.getBlockEntity(pos.pos()) instanceof ImporterBlockEntity importer) {
+            ImporterCore importer = ImporterCore.at(importerLevel, pos.pos());
+            if (importer != null) {
                 importer.recomputeLinkedUpgrades();
             }
         }
@@ -459,7 +470,8 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
             ServerLevel importerLevel = level.getServer() != null ? level.getServer().getLevel(importerGlobalPos.dimension()) : null;
             if (importerLevel == null) continue;
 
-            if (importerLevel.getBlockEntity(importerGlobalPos.pos()) instanceof ImporterBlockEntity importer) {
+            ImporterCore importer = ImporterCore.at(importerLevel, importerGlobalPos.pos());
+            if (importer != null) {
                 importer.removeExporterPosition(thisExporterPos);
             }
         }

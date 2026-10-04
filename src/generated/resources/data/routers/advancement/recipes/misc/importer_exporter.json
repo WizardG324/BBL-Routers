@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_exporter": {
+      "conditions": {
+        "items": [
+          {
+            "items": "routers:exporter"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "routers:importer_exporter"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_exporter"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "routers:importer_exporter"
+    ]
+  }
+}

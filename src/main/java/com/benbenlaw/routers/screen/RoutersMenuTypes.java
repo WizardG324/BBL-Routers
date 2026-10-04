@@ -18,11 +18,15 @@ public class RoutersMenuTypes {
     public static final DeferredHolder<MenuType<?>, MenuType<ImporterMenu>> IMPORTER_MENU =
             MENUS.register("importer_menu", () -> IMenuTypeExtension.create(ImporterMenu::new));
 
+    public static final DeferredHolder<MenuType<?>, MenuType<ImporterExporterMenu>> IMPORTER_EXPORTER_MENU =
+            MENUS.register("importer_exporter_menu", () -> IMenuTypeExtension.create(ImporterExporterMenu::new));
+
+    public static final DeferredHolder<MenuType<?>, MenuType<RouterManagerMenu>> ROUTER_MANAGER_MENU =
+            MENUS.register("router_manager_menu", () -> IMenuTypeExtension.create(RouterManagerMenu::new));
+
     public static final DeferredHolder<MenuType<?>, MenuType<FilterMenu>> FILTER_MENU =
             MENUS.register("item_filter_menu", () -> IMenuTypeExtension.create(FilterMenu::new));
 
-    public static final DeferredHolder<MenuType<?>, MenuType<DistributorMenu>> DISTRIBUTOR_MENU =
-            MENUS.register("distributor_menu", () -> IMenuTypeExtension.create(DistributorMenu::new));
 
 
 

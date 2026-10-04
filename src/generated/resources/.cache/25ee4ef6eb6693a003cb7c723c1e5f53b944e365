@@ -1,4 +1,5 @@
-// 26.1.2	2026-09-22T14:30:09.494108	routers Models
+// 26.1.2	2026-10-04T10:57:57.1799731	routers Models
+50f3ba349d012414e4c856fc66a3af6ce3a6602b assets/routers/blockstates/router_manager.json
 ee065ab5ed5fc664a1446b46951a00bf7dd02c2e assets/routers/items/blacklist_upgrade.json
 35a6161747fc1c128b75e733150e33636d5c6462 assets/routers/items/connector.json
 b293a4958f39b37bb63be274d6d69042b114ce23 assets/routers/items/dimensional_upgrade.json
@@ -11,6 +12,7 @@ bbf9fee6791681f1604c6e416c150496458aa59c assets/routers/items/fluid_upgrade_4.js
 c881158dbbc09396bbcd3eba1d44a5916c2e070f assets/routers/items/fluid_upgrade_5.json
 2263cb55bb5f546633f7903ff6de76a9e9dbdbfd assets/routers/items/ignore_nbt_upgrade.json
 0a538af97598b866fe4a109d557eb96b9636a2c4 assets/routers/items/importer.json
+361db53f941a81c82f1d1c8c358eba347c282ead assets/routers/items/importer_exporter.json
 38b3841e9da41603e10fed716f2c7278c1bc4886 assets/routers/items/item_upgrade_1.json
 08ece483da4786d4cc33925e2dd5ab9acfb7d970 assets/routers/items/item_upgrade_2.json
 5658e14415edd9321245fb17a571f5cba82d034e assets/routers/items/item_upgrade_3.json
@@ -23,12 +25,15 @@ d1958313daea5b92fff1f20c4963b7007889dfa0 assets/routers/items/mod_filter.json
 7fd2313eb37d536d7f4f3055c411ee0bcf34c5b6 assets/routers/items/rf_upgrade_4.json
 5809907c131999d4a2969d82227656d4a1db1150 assets/routers/items/rf_upgrade_5.json
 26d034f70f34cc909afbc895f56f375e6f57adba assets/routers/items/round_robin_upgrade.json
+f9987ebbf2273ba4765728d3563c3bc22bad47bd assets/routers/items/router_manager.json
 95887e1d4496bf892bf1d39d3f4f5e3e650f9e45 assets/routers/items/speed_upgrade_1.json
 d6c0d266ae51c3cf0f8e15a6ea2ecf5e9020a327 assets/routers/items/speed_upgrade_2.json
 ca54048faca754c25ec4192fd587f9e03b8a37ac assets/routers/items/speed_upgrade_3.json
 9921b9ed9bc3fad5632f3215969934ccd8f54799 assets/routers/items/speed_upgrade_4.json
 a02ab8707be697c83a62af8566466eb2668323d9 assets/routers/items/stock_filter.json
 12035f65e947072f4669086319925e36ba0f7947 assets/routers/items/tag_filter.json
+04dd3e72f4443d603006b51ca8242ddd54c1ece0 assets/routers/models/block/router_manager.json
+cfb54e06942e117cf654c273a6cc9ccd33acffe0 assets/routers/models/block/router_manager_vertical.json
 9651468d973afaaafc6cb72620e37e2c307b2a93 assets/routers/models/item/blacklist_upgrade.json
 cd2f853ccb50ecbbeacd12e5e0da10c461cd1456 assets/routers/models/item/connector.json
 a782b05c60fae59f41493467fa9073adc10e96dc assets/routers/models/item/dimensional_upgrade.json

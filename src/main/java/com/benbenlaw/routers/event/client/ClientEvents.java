@@ -4,7 +4,7 @@ import com.benbenlaw.routers.Routers;
 import com.benbenlaw.routers.block.RoutersBlockEntities;
 import com.benbenlaw.routers.block.RoutersBlocks;
 import com.benbenlaw.routers.block.entity.ExporterBlockEntity;
-import com.benbenlaw.routers.block.entity.ImporterBlockEntity;
+import com.benbenlaw.routers.block.entity.ImporterCore;
 import com.benbenlaw.routers.config.StartupConfig;
 import com.benbenlaw.routers.item.*;
 import com.benbenlaw.routers.util.RoutersTags;
@@ -59,6 +59,8 @@ public class ClientEvents {
                 String.valueOf(StartupConfig.defaultSpeedPerOperation.get()));
 
         addShiftTooltip(stack, event, RoutersBlocks.IMPORTER.get().asItem(), "tooltip.routers.importer");
+        addShiftTooltip(stack, event, RoutersBlocks.IMPORTER_EXPORTER.get().asItem(), "tooltip.routers.importer_exporter");
+        addShiftTooltip(stack, event, RoutersBlocks.ROUTER_MANAGER.get().asItem(), "tooltip.routers.router_manager");
         addShiftTooltip(stack, event, RoutersBlocks.DISTRIBUTOR.get().asItem(), "tooltip.routers.distributor");
 
         addShiftTooltip(stack, event, RoutersItems.CONNECTOR.get(), "tooltip.routers.connector");
@@ -177,7 +179,9 @@ public class ClientEvents {
         if (player == null || level == null) return;
 
         ItemStack heldItem = player.getMainHandItem();
-        if (!heldItem.is(Tags.Items.TOOLS_WRENCH)) return;
+        boolean holdingWrench = heldItem.is(Tags.Items.TOOLS_WRENCH);
+        GlobalPos highlighted = ManagerHighlight.active();
+        if (!holdingWrench && highlighted == null) return;
 
         PoseStack poseStack = event.getPoseStack();
         MultiBufferSource.BufferSource buffer = mc.renderBuffers().bufferSource();
@@ -187,7 +191,7 @@ public class ClientEvents {
         boolean drewAnything = false;
         int pulseGreen = pulse(0.2F, 0.96F, 0.3F);
 
-        GlobalPos exporterGlobalPos = heldItem.get(RoutersDataComponents.EXPORTER_POSITION.value());
+        GlobalPos exporterGlobalPos = holdingWrench ? heldItem.get(RoutersDataComponents.EXPORTER_POSITION.value()) : null;
         if (exporterGlobalPos != null) {
             BlockEntity be = level.getBlockEntity(exporterGlobalPos.pos());
 
@@ -204,21 +208,26 @@ public class ClientEvents {
             }
         }
 
-        GlobalPos importerGlobalPos = heldItem.get(RoutersDataComponents.IMPORTER_POSITION.value());
+        GlobalPos importerGlobalPos = holdingWrench ? heldItem.get(RoutersDataComponents.IMPORTER_POSITION.value()) : null;
         if (importerGlobalPos != null) {
-            BlockEntity be = level.getBlockEntity(importerGlobalPos.pos());
+            ImporterCore importerCore = ImporterCore.at(level, importerGlobalPos.pos());
 
-            if (be instanceof ImporterBlockEntity importerBlockEntity && importerBlockEntity.exporterPositions != null && !importerBlockEntity.exporterPositions.isEmpty()) {
+            if (importerCore != null && importerCore.exporterPositions != null && !importerCore.exporterPositions.isEmpty()) {
 
                 drawBlockOutline(poseStack, lineBuilder, level, importerGlobalPos.pos(), cam, pulseGreen);
                 drewAnything = true;
 
-                for (GlobalPos linkedExporterPos : importerBlockEntity.exporterPositions) {
+                for (GlobalPos linkedExporterPos : importerCore.exporterPositions) {
                     if (!linkedExporterPos.dimension().equals(level.dimension())) continue;
 
                     drawBlockOutline(poseStack, lineBuilder, level, linkedExporterPos.pos(), cam, COLOR_RED);
                 }
             }
+        }
+
+        if (highlighted != null && highlighted.dimension().equals(level.dimension())) {
+            drawBlockOutline(poseStack, lineBuilder, level, highlighted.pos(), cam, pulse(1.0F, 1.0F, 1.0F));
+            drewAnything = true;
         }
 
         if (drewAnything) {

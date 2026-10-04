@@ -56,13 +56,56 @@ public class RoutersLangProvider extends LanguageProvider {
         //Blocks
         add("block.routers.exporter", "Exporter");
         add("block.routers.importer", "Importer");
+        add("block.routers.importer_exporter", "Importer Exporter (BETA)");
+        add("block.routers.router_manager", "Router Manager (BETA)");
         add("block.routers.distributor", "Distributor (BETA)");
 
         //Tooltips
         add("tooltip.routers.connector", "Shift Right Click to set Exporter / Importer target. Right Click to connect to target");
         add("tooltip.routers.exporter", "Exports resources from a connected block to Importer, Exporters extract every %s ticks");
         add("tooltip.routers.importer", "Receives resources from connected Exporters");
-        add("tooltip.routers.distributor", "Distributes energy from this to other energy receiving blocks in the area");
+        add("tooltip.routers.importer_exporter", "Exports and Imports from the same block, toggle mode inside the GUI");
+
+        add("gui.routers.importer_exporter.title.exporter", "Configuring Exporter");
+        add("gui.routers.importer_exporter.title.importer", "Configuring Importer");
+        add("tooltip.routers.router_manager", "Shows a flow chart of every Router connected to the Routers around it. Scroll to zoom, drag to pan, hover a Router for details");
+
+        add("gui.routers.manager.title", "Router Manager");
+        add("gui.routers.manager.routers", "%s Routers");
+        add("gui.routers.manager.truncated", "Showing first %s Routers");
+        add("gui.routers.manager.empty", "No Routers found near the Router Manager");
+        add("gui.routers.manager.hint", "Scroll to zoom, drag to pan");
+        add("gui.routers.manager.legend.item", "Items");
+        add("gui.routers.manager.legend.fluid", "Fluids");
+        add("gui.routers.manager.legend.energy", "Energy");
+        add("gui.routers.manager.legend.inventory", "Via shared inventory");
+        add("gui.routers.manager.kind.exporter", "Exporter");
+        add("gui.routers.manager.kind.importer", "Importer");
+        add("gui.routers.manager.kind.distributor", "Distributor");
+        add("gui.routers.manager.kind.importer_exporter", "Importer Exporter");
+        add("gui.routers.manager.kind.unloaded", "Unloaded or missing Router");
+        add("gui.routers.manager.position", "Position: %s");
+        add("gui.routers.manager.dimension", "Dimension: %s");
+        add("gui.routers.manager.adjacent", "Connected to: %s");
+        add("gui.routers.manager.exporter_side", "Exporter: %s");
+        add("gui.routers.manager.importer_side", "Importer: %s");
+        add("gui.routers.manager.distributor_side", "Distributes: %s");
+        add("gui.routers.manager.no_upgrades", "No transfer upgrades");
+        add("gui.routers.manager.flag.round_robin", "Round Robin");
+        add("gui.routers.manager.flag.dimensional", "Dimensional");
+        add("gui.routers.manager.flag.blacklist", "Blacklist");
+        add("gui.routers.manager.flag.ignore_nbt", "Ignore NBT");
+        add("gui.routers.manager.flag.filtered", "Filtered");
+        add("gui.routers.manager.disabled", "Disabled by redstone");
+        add("gui.routers.manager.click_to_open", "Click to open");
+        add("gui.routers.manager.right_click_to_locate", "Right click to locate");
+        add("gui.routers.manager.cannot_locate_dimension", "That Router is in another dimension, so it cannot be highlighted");
+        add("gui.routers.manager.cannot_open_unloaded", "That Router is not loaded");
+        add("gui.routers.manager.cannot_open_dimension", "That Router is in another dimension");
+
+        add("tooltip.routers.importer_exporter.switch_to_importer", "Switch to Importer settings");
+        add("tooltip.routers.importer_exporter.switch_to_exporter", "Switch to Exporter settings");
+        add("tooltip.routers.distributor", "Link Exporters to it like an Importer. Whatever they send is shared out between every machine in range, depending on this Distributor's own upgrades and filters. Has no storage");
 
         add("tooltip.routers.item_upgrade", "Allows the Extraction of Items from an Exporter at %s Per Operation");
         add("tooltip.routers.fluid_upgrade", "Allows the Extraction of Fluids from an Exporter at %smb Per Operation");
@@ -113,11 +156,15 @@ public class RoutersLangProvider extends LanguageProvider {
         //Client Messages
         add("message.routers.exporter_selected", "Exporter target set to %s");
         add("message.routers.importer_selected", "Importer target set to %s");
+        add("message.routers.distributor_selected", "Distributor target set to %s");
         add("message.routers.connected_exporter_to_importer", "Connected Exporter to Importer at %s");
+        add("message.routers.connected_exporter_to_distributor", "Connected Exporter to Distributor at %s");
         add("message.routers.connected_importer_to_exporter", "Connected Importer to Exporter at %s");
+        add("message.routers.cannot_connect_to_self", "A block cannot be connected to itself!");
         add("message.routers.not_loaded", "Area not loaded to connect routers!");
         add("message.routers.no_exporter_importer_selected", "No Exporter / Importer selected. Shift right click to set main connection !");
         add("message.routers.disconnected_exporter_from_importer", "Unlinked Exporter from Importer!");
+        add("message.routers.disconnected_exporter_from_distributor", "Unlinked Exporter from Distributor!");
 
 
     }

@@ -103,6 +103,27 @@ public class RoutersRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_iron_ingot", has(Items.IRON_INGOT))
                 .save(output);
 
+        //Exporter / Importer
+        shapeless(RecipeCategory.MISC, RoutersBlocks.IMPORTER_EXPORTER.get())
+                .requires(RoutersBlocks.EXPORTER.get())
+                .requires(RoutersBlocks.IMPORTER.get())
+                .group(Routers.MOD_ID)
+                .unlockedBy("has_exporter", has(RoutersBlocks.EXPORTER.get()))
+                .save(output);
+
+        //Router Manager
+        shaped(RecipeCategory.MISC, RoutersBlocks.ROUTER_MANAGER.get())
+                .pattern("ABC")
+                .pattern("DDD")
+                .pattern("DDD")
+                .define('A', RoutersBlocks.EXPORTER.get())
+                .define('B', RoutersBlocks.IMPORTER.get())
+                .define('C', RoutersBlocks.IMPORTER_EXPORTER.get())
+                .define('D', Tags.Items.INGOTS_IRON)
+                .group(Routers.MOD_ID)
+                .unlockedBy("has_iron_ingot", has(Items.IRON_INGOT))
+                .save(output);
+
         //Distributor
         shaped(RecipeCategory.MISC, RoutersBlocks.DISTRIBUTOR.get())
                 .pattern("ABA")

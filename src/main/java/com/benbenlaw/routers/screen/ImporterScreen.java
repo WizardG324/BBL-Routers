@@ -45,8 +45,8 @@ public class ImporterScreen extends AbstractContainerScreen<ImporterMenu> {
 
     // Unlike the Exporter, every filter button is always shown here - the upgrade it needs lives
     // on a linked exporter rather than this block, so hiding the button when nothing's linked yet
-    // would just look like the feature doesn't exist. A locked button stays visible, dimmed, with
-    // a tooltip explaining what it's waiting on (see FilterButton.isLocked/createAlwaysVisible).
+    // would just look like the feature doesn't exist. A locked button stays visible and clickable,
+    // with a tooltip explaining what it's waiting on (see FilterButton.isLocked/createAlwaysVisible).
     private void updateButtons() {
         int baseX = (width - imageWidth) / 2;
         int baseY = (height - imageHeight) / 2;
@@ -71,6 +71,7 @@ public class ImporterScreen extends AbstractContainerScreen<ImporterMenu> {
                         x, y,
                         BUTTON_SIZE,
                         BUTTON_SIZE,
+                        menu.blockEntity.getBlockPos(),
                         menu.blockEntity,
                         type
                 );

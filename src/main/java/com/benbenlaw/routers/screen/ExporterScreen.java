@@ -73,6 +73,7 @@ public class ExporterScreen extends AbstractContainerScreen<ExporterMenu> {
                             x, y,
                             BUTTON_SIZE,
                             BUTTON_SIZE,
+                            menu.blockEntity.getBlockPos(),
                             menu.blockEntity,
                             type
                     );

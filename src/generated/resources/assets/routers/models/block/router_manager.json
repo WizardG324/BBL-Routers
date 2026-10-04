@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "routers:block/router_manager_front",
+    "side": "routers:block/machine_side_idle",
+    "top": "routers:block/machine_top"
+  }
+}

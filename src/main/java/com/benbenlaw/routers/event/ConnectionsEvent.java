@@ -4,6 +4,7 @@ import com.benbenlaw.routers.Routers;
 import com.benbenlaw.routers.block.RoutersBlocks;
 import com.benbenlaw.routers.block.custom.RouterBlock;
 import com.benbenlaw.routers.block.entity.ExporterBlockEntity;
+import com.benbenlaw.routers.block.entity.ImporterExporterBlockEntity;
 import com.benbenlaw.routers.item.RoutersDataComponents;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.network.chat.Component;
@@ -40,19 +41,32 @@ public class ConnectionsEvent {
            GlobalPos mainExporterPos = heldItem.get(RoutersDataComponents.EXPORTER_POSITION.value());
            GlobalPos mainImporterPos = heldItem.get(RoutersDataComponents.IMPORTER_POSITION.value());
 
+            boolean hybridImporterMode = level.getBlockEntity(clickedPos.pos()) instanceof ImporterExporterBlockEntity hybrid && hybrid.isViewingImporterSide();
+            boolean isHybrid = blockState.is(RoutersBlocks.IMPORTER_EXPORTER);
+            boolean actsAsExporter = blockState.is(RoutersBlocks.EXPORTER) || (isHybrid && !hybridImporterMode);
+            boolean actsAsImporter = blockState.is(RoutersBlocks.IMPORTER) || blockState.is(RoutersBlocks.DISTRIBUTOR) || (isHybrid && hybridImporterMode);
+
             if (player.isShiftKeyDown()) {
                 player.swing(event.getHand(), true);
 
-                if (blockState.is(RoutersBlocks.EXPORTER)) {
+                if (actsAsExporter) {
                     player.sendSystemMessage(
                             Component.translatable("message.routers.exporter_selected", clickedPosStr)
                     );
+                    if (clickedPos.equals(mainImporterPos)) {
+                        heldItem.remove(RoutersDataComponents.IMPORTER_POSITION.value());
+                    }
                     heldItem.set(RoutersDataComponents.EXPORTER_POSITION, clickedPos);
 
-                } else if (blockState.is(RoutersBlocks.IMPORTER)) {
+                } else if (actsAsImporter) {
                     player.sendSystemMessage(
-                            Component.translatable("message.routers.importer_selected", clickedPosStr)
+                            Component.translatable(blockState.is(RoutersBlocks.DISTRIBUTOR)
+                                    ? "message.routers.distributor_selected"
+                                    : "message.routers.importer_selected", clickedPosStr)
                     );
+                    if (clickedPos.equals(mainExporterPos)) {
+                        heldItem.remove(RoutersDataComponents.EXPORTER_POSITION.value());
+                    }
                     heldItem.set(RoutersDataComponents.IMPORTER_POSITION, clickedPos);
                 }
 
@@ -61,12 +75,12 @@ public class ConnectionsEvent {
                 return;
             }
 
-            if (mainExporterPos != null && blockState.is(RoutersBlocks.IMPORTER)) {
+            if (mainExporterPos != null && actsAsImporter) {
                 connectExporterToImporter(level, player, mainExporterPos, clickedPos);
                 return;
             }
 
-            if (mainImporterPos != null && blockState.is(RoutersBlocks.EXPORTER)) {
+            if (mainImporterPos != null && actsAsExporter) {
                 connectExporterToImporter(level, player, clickedPos, mainImporterPos);
                 return;
             }
@@ -78,6 +92,13 @@ public class ConnectionsEvent {
     }
 
     private static void connectExporterToImporter(Level level, Player player, GlobalPos exporterPos, GlobalPos importerPos) {
+        if (exporterPos.equals(importerPos)) {
+            player.sendSystemMessage(
+                    Component.translatable("message.routers.cannot_connect_to_self")
+            );
+            return;
+        }
+
         ServerLevel exporterLevel = level.getServer().getLevel(exporterPos.dimension());
 
         if (exporterLevel == null || !exporterLevel.isLoaded(exporterPos.pos())) {
@@ -94,19 +115,23 @@ public class ConnectionsEvent {
             return;
         }
 
+        ServerLevel importerLevel = level.getServer().getLevel(importerPos.dimension());
+        String target = importerLevel != null && importerLevel.getBlockState(importerPos.pos()).is(RoutersBlocks.DISTRIBUTOR)
+                ? "distributor" : "importer";
+
         boolean connected = exporter.toggleImporterPosition(importerPos);
 
         if (connected) {
             player.sendSystemMessage(
                     Component.translatable(
-                            "message.routers.connected_exporter_to_importer",
+                            "message.routers.connected_exporter_to_" + target,
                             importerPos.pos().toShortString()
                     )
             );
         } else {
             player.sendSystemMessage(
                     Component.translatable(
-                            "message.routers.disconnected_exporter_from_importer",
+                            "message.routers.disconnected_exporter_from_" + target,
                             importerPos.pos().toShortString()
                     )
             );

@@ -1,5 +1,6 @@
 package com.benbenlaw.routers.screen;
 
+import com.benbenlaw.routers.manager.ManagerSessions;
 import com.benbenlaw.core.screen.SimpleAbstractContainerMenu;
 import com.benbenlaw.core.screen.util.slot.InputSlot;
 import com.benbenlaw.routers.block.entity.ExporterBlockEntity;
@@ -44,6 +45,11 @@ public class ExporterMenu extends SimpleAbstractContainerMenu {
     }
 
     @Override
+    public boolean stillValid(Player player) {
+        return ManagerSessions.allowsRemote(player, blockPos) || super.stillValid(player);
+    }
+
+    @Override
     public @NotNull ItemStack quickMoveStack(Player playerIn, int pIndex) {
         Slot sourceSlot = this.slots.get(pIndex);
         if (sourceSlot == null || !sourceSlot.hasItem()) {
@@ -56,7 +62,7 @@ public class ExporterMenu extends SimpleAbstractContainerMenu {
             return super.quickMoveStack(playerIn, pIndex);
         }
 
-        if (!sourceStack.is(RoutersTags.Items.EXPORTER_UPGRADES)) {
+        if (!blockEntity.acceptsUpgrade(sourceStack)) {
             return ItemStack.EMPTY;
         }
 

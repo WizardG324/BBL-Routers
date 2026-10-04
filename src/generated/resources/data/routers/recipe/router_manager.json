@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "routers",
+  "key": {
+    "A": "routers:exporter",
+    "B": "routers:importer",
+    "C": "routers:importer_exporter",
+    "D": "#c:ingots/iron"
+  },
+  "pattern": [
+    "ABC",
+    "DDD",
+    "DDD"
+  ],
+  "result": {
+    "id": "routers:router_manager"
+  }
+}

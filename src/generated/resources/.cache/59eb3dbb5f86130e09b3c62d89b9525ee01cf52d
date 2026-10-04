@@ -1,4 +1,6 @@
-// 26.1.2	2026-04-16T19:18:13.4231724	Loot Tables
+// 26.1.2	2026-10-04T10:57:57.1809968	Loot Tables
 96b851164eff1a32a49535c47e7b2624496c0898 data/routers/loot_table/blocks/distributor.json
 8aa1ac4987aea278617acab9eafb0b9d1079b258 data/routers/loot_table/blocks/exporter.json
 37d3784b7daea2ea27700a9e90c51dfa51b7dc4e data/routers/loot_table/blocks/importer.json
+93c19989ad9996353751c0ee674b4519552298db data/routers/loot_table/blocks/importer_exporter.json
+dfd291d0bf49164420668ba525407efeb4b9d6f1 data/routers/loot_table/blocks/router_manager.json

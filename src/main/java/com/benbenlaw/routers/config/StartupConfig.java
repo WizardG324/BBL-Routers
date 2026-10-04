@@ -9,6 +9,8 @@ public class StartupConfig {
     public static final ModConfigSpec SPEC;
 
     public static final ModConfigSpec.ConfigValue<Integer> distributorRange;
+    public static final ModConfigSpec.ConfigValue<Integer> distributorMaxTargets;
+    public static final ModConfigSpec.ConfigValue<Integer> distributorRefreshTicks;
 
     public static final ModConfigSpec.ConfigValue<Integer> RFPerTick1;
     public static final ModConfigSpec.ConfigValue<Integer> RFPerTick2;
@@ -43,6 +45,9 @@ public class StartupConfig {
     public static final ModConfigSpec.ConfigValue<Integer> minBackoffTicks;
     public static final ModConfigSpec.ConfigValue<Integer> maxBackoffTicks;
 
+    public static final ModConfigSpec.ConfigValue<Integer> managerSeedRadius;
+    public static final ModConfigSpec.ConfigValue<Integer> managerMaxRouters;
+
     public static final ModConfigSpec.ConfigValue<Integer> sourcePerOperation1;
     public static final ModConfigSpec.ConfigValue<Integer> sourcePerOperation2;
     public static final ModConfigSpec.ConfigValue<Integer> sourcePerOperation3;
@@ -59,6 +64,14 @@ public class StartupConfig {
         distributorRange = BUILDER
                 .comment("The range of the distributor in blocks.")
                 .defineInRange("Distributor Range", 10, 1, 64);
+
+        distributorMaxTargets = BUILDER
+                .comment("The most machines a single distributor will share resources between. If more are in range, the closest ones are used.")
+                .defineInRange("Distributor Max Machines", 64, 1, 1024);
+
+        distributorRefreshTicks = BUILDER
+                .comment("How often, in ticks, a distributor looks again for the machines around it. A new machine can take up to this long to start receiving.")
+                .defineInRange("Distributor Refresh Ticks", 100, 1, 1200);
 
 
         BUILDER.comment("Routers Config").push("RF Upgrades");
@@ -205,6 +218,19 @@ public class StartupConfig {
         sourcePerOperation4 = BUILDER
                 .comment("The maximum sources per operation that tier 4 can provide.")
                 .defineInRange("Source Per Operation 4", 1000, 1, Integer.MAX_VALUE);
+
+        BUILDER.pop();
+
+        BUILDER.comment("Router Manager").push("Router Manager");
+
+        managerSeedRadius = BUILDER
+                .comment("Routers within this many blocks of a Router Manager are where its flow chart starts. ",
+                        "From there it follows every link to chart the whole connected network, even far away or in other dimensions.")
+                .defineInRange("Seed Radius", 16, 1, 128);
+
+        managerMaxRouters = BUILDER
+                .comment("The most routers a single Router Manager flow chart will include. Larger networks are cut off at this many.")
+                .defineInRange("Max Routers Charted", 256, 1, 4096);
 
         BUILDER.pop();
 

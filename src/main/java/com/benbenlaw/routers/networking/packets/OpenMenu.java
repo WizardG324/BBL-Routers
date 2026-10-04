@@ -2,6 +2,7 @@ package com.benbenlaw.routers.networking.packets;
 
 import com.benbenlaw.routers.Routers;
 import com.benbenlaw.routers.api.RouterButtonTypes;
+import com.benbenlaw.routers.manager.ManagerSessions;
 import com.benbenlaw.routers.screen.upgrade.FilterMenu;
 import com.benbenlaw.routers.screen.util.button.ButtonType;
 import net.minecraft.core.BlockPos;
@@ -24,13 +25,13 @@ public record OpenMenu(BlockPos blockPos, ButtonType buttonType) implements Cust
             ServerPlayer player = (ServerPlayer) context.player();
 
             if (packet.buttonType != null) {
-                player.openMenu(new SimpleMenuProvider((windowId, playerInventory, playerEntity) ->
+                ManagerSessions.switchMenu(player, () -> player.openMenu(new SimpleMenuProvider((windowId, playerInventory, playerEntity) ->
                         new FilterMenu(windowId, playerInventory, packet.blockPos, packet.buttonType, new SimpleContainerData(2)),
                         Component.translatable(packet.buttonType.getMenuName())
                 ), buf -> {
                     buf.writeBlockPos(packet.blockPos);
                     buf.writeIdentifier(packet.buttonType.getId());
-                });
+                }));
             }
         });
     };

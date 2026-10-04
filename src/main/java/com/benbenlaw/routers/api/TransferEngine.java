@@ -2,7 +2,7 @@ package com.benbenlaw.routers.api;
 
 import com.benbenlaw.routers.block.custom.RouterBlock;
 import com.benbenlaw.routers.block.entity.ExporterBlockEntity;
-import com.benbenlaw.routers.block.entity.ImporterBlockEntity;
+import com.benbenlaw.routers.block.entity.ImporterCore;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
 
@@ -42,6 +42,7 @@ public class TransferEngine {
     }
 
     private static boolean pullsOwnResources(ServerLevel level, GlobalPos importerPos) {
-        return level.getBlockEntity(importerPos.pos()) instanceof ImporterBlockEntity importer && importer.isRoundRobin;
+        ImporterCore importer = ImporterCore.at(level, importerPos.pos());
+        return importer != null && importer.isRoundRobin;
     }
 }

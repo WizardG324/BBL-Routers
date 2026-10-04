@@ -1,5 +1,6 @@
 package com.benbenlaw.routers.screen.upgrade;
 
+import com.benbenlaw.routers.manager.ManagerSessions;
 import com.benbenlaw.core.screen.SimpleAbstractContainerMenu;
 import com.benbenlaw.core.screen.util.slot.FilterFluidSlot;
 import com.benbenlaw.core.screen.util.slot.FilterSlot;
@@ -44,8 +45,7 @@ public class FilterMenu extends SimpleAbstractContainerMenu {
         this.blockPos = blockPos;
         this.buttonType = buttonType;
         this.level = inventory.player.level();
-        this.blockEntity = this.level.getBlockEntity(blockPos) instanceof ConfigurableRouterBlockEntity configurable
-                ? configurable : null;
+        this.blockEntity = ConfigurableRouterBlockEntity.resolve(this.level.getBlockEntity(blockPos));
 
         if (blockEntity != null && buttonType != null) {
             Registry<ScreenModule> registry = level.registryAccess().lookupOrThrow(RouterUIRegistries.SCREEN_MODULE_KEY);
@@ -63,6 +63,11 @@ public class FilterMenu extends SimpleAbstractContainerMenu {
 
     public void addSlotPublic(Slot slot) {
         this.addSlot(slot);
+    }
+
+    @Override
+    public boolean stillValid(Player player) {
+        return ManagerSessions.allowsRemote(player, blockPos) || super.stillValid(player);
     }
 
     @Override

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "routers",
+  "ingredients": [
+    "routers:exporter",
+    "routers:importer"
+  ],
+  "result": {
+    "id": "routers:importer_exporter"
+  }
+}

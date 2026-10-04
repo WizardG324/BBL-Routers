@@ -9,7 +9,7 @@ import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 import javax.annotation.Nullable;
@@ -47,15 +47,10 @@ public class FilterButton extends Button {
     // Hides the button entirely when locked - used by the Exporter, where the upgrade the button
     // needs is just a slot on the same block the player is already looking at.
     @Nullable
-    public static FilterButton create(int x, int y, int width, int height, BlockEntity blockEntity, ButtonType type) {
-        if (blockEntity instanceof ConfigurableRouterBlockEntity configurable) {
-            if (!configurable.hasUpgrade(type)) return null;
+    public static FilterButton create(int x, int y, int width, int height, BlockPos pos, ConfigurableRouterBlockEntity configurable, ButtonType type) {
+        if (!configurable.hasUpgrade(type)) return null;
 
-            return new FilterButton(x, y, width, height,
-                    button -> openMenu(blockEntity, type), type, configurable);
-        }
-
-        return null;
+        return new FilterButton(x, y, width, height, button -> openMenu(pos, type), type, configurable);
     }
 
     // Always visible AND always clickable, even when locked - used by the Importer, where the
@@ -63,18 +58,12 @@ public class FilterButton extends Button {
     // be configured ahead of a connection existing; "locked" here is purely informational (it
     // won't actually do anything until a linked exporter provides the matching upgrade), not a
     // block on editing it.
-    @Nullable
-    public static FilterButton createAlwaysVisible(int x, int y, int width, int height, BlockEntity blockEntity, ButtonType type) {
-        if (blockEntity instanceof ConfigurableRouterBlockEntity configurable) {
-            return new FilterButton(x, y, width, height,
-                    button -> openMenu(blockEntity, type), type, configurable);
-        }
-
-        return null;
+    public static FilterButton createAlwaysVisible(int x, int y, int width, int height, BlockPos pos, ConfigurableRouterBlockEntity configurable, ButtonType type) {
+        return new FilterButton(x, y, width, height, button -> openMenu(pos, type), type, configurable);
     }
 
-    private static void openMenu(BlockEntity blockEntity, ButtonType type) {
-        ClientPacketDistributor.sendToServer(new OpenMenu(blockEntity.getBlockPos(), type));
+    private static void openMenu(BlockPos pos, ButtonType type) {
+        ClientPacketDistributor.sendToServer(new OpenMenu(pos, type));
     }
 
     @Override

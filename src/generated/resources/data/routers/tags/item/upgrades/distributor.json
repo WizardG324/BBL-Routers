@@ -1,0 +1,10 @@
+{
+  "values": [
+    "#routers:item_upgrades",
+    "#routers:fluid_upgrades",
+    "#routers:rf_upgrades",
+    "#routers:round_robin_upgrades",
+    "routers:blacklist_upgrade",
+    "routers:ignore_nbt_upgrade"
+  ]
+}

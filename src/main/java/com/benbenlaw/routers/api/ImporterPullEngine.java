@@ -1,7 +1,7 @@
 package com.benbenlaw.routers.api;
 
 import com.benbenlaw.routers.block.custom.RouterBlock;
-import com.benbenlaw.routers.block.entity.ImporterBlockEntity;
+import com.benbenlaw.routers.block.entity.ImporterCore;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
 
@@ -9,7 +9,7 @@ import java.util.List;
 
 public class ImporterPullEngine {
 
-    public static int run(ServerLevel level, ImporterBlockEntity importer, List<GlobalPos> exporters, int lastIndex, IImporterResourceTransfer transferLogic) {
+    public static int run(ServerLevel level, ImporterCore importer, List<GlobalPos> exporters, int lastIndex, IImporterResourceTransfer transferLogic) {
         if (exporters == null || exporters.isEmpty()) return lastIndex;
 
         int size = exporters.size();

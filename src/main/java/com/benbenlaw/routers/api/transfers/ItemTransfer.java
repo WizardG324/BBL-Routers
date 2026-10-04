@@ -3,8 +3,9 @@ package com.benbenlaw.routers.api.transfers;
 import com.benbenlaw.core.block.entity.handler.item.FilterItemHandler;
 import com.benbenlaw.routers.api.ImporterPullEngine;
 import com.benbenlaw.routers.api.TransferEngine;
+import com.benbenlaw.routers.block.entity.DistributorBlockEntity;
 import com.benbenlaw.routers.block.entity.ExporterBlockEntity;
-import com.benbenlaw.routers.block.entity.ImporterBlockEntity;
+import com.benbenlaw.routers.block.entity.ImporterCore;
 import com.benbenlaw.routers.item.FilterItem;
 import com.benbenlaw.routers.item.FilterType;
 import com.benbenlaw.routers.item.RoutersDataComponents;
@@ -38,7 +39,7 @@ public class ItemTransfer {
                     ResourceHandler<ItemResource> target = getTargetHandler(srvLevel, entity, targetPos);
                     if (target == null) return false;
 
-                    ImporterBlockEntity importer = srvLevel.getBlockEntity(targetPos.pos()) instanceof ImporterBlockEntity imp ? imp : null;
+                    ImporterCore importer = ImporterCore.at(srvLevel, targetPos.pos());
 
                     int amount = entity.getUpgradeValue(RoutersTags.Items.ITEM_UPGRADES);
                     int start = entity.getItemScanState().nextScanStart(source.size());
@@ -70,7 +71,7 @@ public class ItemTransfer {
         return result;
     }
 
-    public static int pullItems(ServerLevel level, ImporterBlockEntity importer) {
+    public static int pullItems(ServerLevel level, ImporterCore importer) {
 
         if (importer.getItemScanState().shouldSkip(level.getGameTime())) return importer.lastExporterIndex;
 
@@ -163,7 +164,7 @@ public class ItemTransfer {
     }
 
     @Nullable
-    private static ResourceHandler<ItemResource> getSourceHandler(ServerLevel importerLevel, ExporterBlockEntity exporter, ImporterBlockEntity importer, GlobalPos exporterPos) {
+    private static ResourceHandler<ItemResource> getSourceHandler(ServerLevel importerLevel, ExporterBlockEntity exporter, ImporterCore importer, GlobalPos exporterPos) {
         if (!exporterPos.dimension().equals(importerLevel.dimension()) && !exporter.canDoDimensionalTravel()) return null;
 
         ServerLevel exporterLevel = importerLevel.getServer().getLevel(exporterPos.dimension());
@@ -172,7 +173,7 @@ public class ItemTransfer {
         return importer.getItemSourceCache().get(exporterLevel, exporterPos);
     }
 
-    private static int checkFilter(FilterItemHandler filterHandler, ItemResource resource, boolean isWhitelist, boolean ignoreNbt) {
+    static int checkFilter(FilterItemHandler filterHandler, ItemResource resource, boolean isWhitelist, boolean ignoreNbt) {
         ItemStack incoming = resource.toStack();
         boolean hasAnyFilter = false;
         boolean foundMatch = false;
@@ -260,6 +261,10 @@ public class ItemTransfer {
         ServerLevel targetLevel = level.getServer().getLevel(pos.dimension());
         if (targetLevel == null || (!pos.dimension().equals(level.dimension()) && !exporter.canDoDimensionalTravel())) return null;
         if (!targetLevel.isLoaded(pos.pos())) return null;
+
+        if (targetLevel.getBlockEntity(pos.pos()) instanceof DistributorBlockEntity distributor) {
+            return distributor.getItemDistributor();
+        }
 
         return exporter.getItemTargetCache().get(targetLevel, pos);
     }

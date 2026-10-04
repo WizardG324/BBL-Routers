@@ -1,5 +1,6 @@
 package com.benbenlaw.routers.screen;
 
+import com.benbenlaw.routers.manager.ManagerSessions;
 import com.benbenlaw.core.screen.SimpleAbstractContainerMenu;
 import com.benbenlaw.core.screen.util.slot.InputSlot;
 import com.benbenlaw.routers.block.entity.ImporterBlockEntity;
@@ -39,6 +40,11 @@ public class ImporterMenu extends SimpleAbstractContainerMenu {
         }
 
         this.addDataSlots(data);
+    }
+
+    @Override
+    public boolean stillValid(Player player) {
+        return ManagerSessions.allowsRemote(player, blockPos) || super.stillValid(player);
     }
 
     @Override

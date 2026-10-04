@@ -2,8 +2,9 @@ package com.benbenlaw.routers.api.transfers;
 
 import com.benbenlaw.routers.api.ImporterPullEngine;
 import com.benbenlaw.routers.api.TransferEngine;
+import com.benbenlaw.routers.block.entity.DistributorBlockEntity;
 import com.benbenlaw.routers.block.entity.ExporterBlockEntity;
-import com.benbenlaw.routers.block.entity.ImporterBlockEntity;
+import com.benbenlaw.routers.block.entity.ImporterCore;
 import com.benbenlaw.routers.util.RoutersTags;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
@@ -32,16 +33,9 @@ public class EnergyTransfer {
                     EnergyHandler target = getTargetHandler(srvLevel, entity, targetGlobalPos);
                     if (target == null) return false;
 
-                    try (Transaction tx = Transaction.open(null)) {
-                        int extracted = source.extract(amount, tx);
-                        if (extracted <= 0) return false;
-
-                        int accepted = target.insert(extracted, tx);
-                        if (accepted > 0) {
-                            tx.commit();
-                            moved[0] = true;
-                            return true;
-                        }
+                    if (moveEnergy(source, target, amount)) {
+                        moved[0] = true;
+                        return true;
                     }
                     return false;
                 });
@@ -53,12 +47,18 @@ public class EnergyTransfer {
     private static EnergyHandler getTargetHandler(ServerLevel level, ExporterBlockEntity exporter, GlobalPos pos) {
         ServerLevel targetLevel = level.getServer().getLevel(pos.dimension());
         if (targetLevel == null || (!pos.dimension().equals(level.dimension()) && !exporter.canDoDimensionalTravel())) return null;
-        if (!targetLevel.isLoaded(pos.pos()) || !(targetLevel.getBlockEntity(pos.pos()) instanceof ImporterBlockEntity)) return null;
+        if (!targetLevel.isLoaded(pos.pos())) return null;
+
+        if (targetLevel.getBlockEntity(pos.pos()) instanceof DistributorBlockEntity distributor) {
+            return distributor.getEnergyDistributor();
+        }
+
+        if (ImporterCore.at(targetLevel, pos.pos()) == null) return null;
 
         return exporter.getEnergyTargetCache().get(targetLevel, pos);
     }
 
-    public static int pullEnergy(ServerLevel level, ImporterBlockEntity importer) {
+    public static int pullEnergy(ServerLevel level, ImporterCore importer) {
 
         if (importer.getEnergyScanState().shouldSkip(level.getGameTime())) return importer.lastExporterIndex;
 
@@ -80,22 +80,34 @@ public class EnergyTransfer {
 
                     int amount = exporter.getUpgradeValue(RoutersTags.Items.RF_UPGRADES);
 
-                    try (Transaction tx = Transaction.open(null)) {
-                        int extracted = source.extract(amount, tx);
-                        if (extracted <= 0) return false;
-
-                        int accepted = target.insert(extracted, tx);
-                        if (accepted > 0) {
-                            tx.commit();
-                            moved[0] = true;
-                            return true;
-                        }
+                    if (moveEnergy(source, target, amount)) {
+                        moved[0] = true;
+                        return true;
                     }
                     return false;
                 });
 
         importer.getEnergyScanState().recordResult(level.getGameTime(), 1, moved[0]);
         return result;
+    }
+
+    // Only takes from the source what the target actually accepts. Extracting first and then inserting in one
+    // transaction would commit the whole extraction even when the target only took part of it.
+    private static boolean moveEnergy(EnergyHandler source, EnergyHandler target, int amount) {
+        int available;
+        try (Transaction simulation = Transaction.open(null)) {
+            available = source.extract(amount, simulation);
+        }
+        if (available <= 0) return false;
+
+        try (Transaction tx = Transaction.open(null)) {
+            int accepted = target.insert(available, tx);
+            if (accepted > 0 && source.extract(accepted, tx) == accepted) {
+                tx.commit();
+                return true;
+            }
+        }
+        return false;
     }
 
     @Nullable
@@ -106,7 +118,7 @@ public class EnergyTransfer {
     }
 
     @Nullable
-    private static EnergyHandler getSourceHandler(ServerLevel importerLevel, ExporterBlockEntity exporter, ImporterBlockEntity importer, GlobalPos exporterPos) {
+    private static EnergyHandler getSourceHandler(ServerLevel importerLevel, ExporterBlockEntity exporter, ImporterCore importer, GlobalPos exporterPos) {
         if (!exporterPos.dimension().equals(importerLevel.dimension()) && !exporter.canDoDimensionalTravel()) return null;
 
         ServerLevel exporterLevel = importerLevel.getServer().getLevel(exporterPos.dimension());

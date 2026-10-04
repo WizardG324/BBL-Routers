@@ -2,6 +2,8 @@
   "values": [
     "routers:exporter",
     "routers:importer",
+    "routers:importer_exporter",
+    "routers:router_manager",
     "routers:distributor"
   ]
 }

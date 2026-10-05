@@ -70,7 +70,6 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
     private EditBox nameBox;
     private GlobalPos renaming;
 
-    // Ctrl + drag from a router: where the drag started, and where the cursor is now
     // where each edge leaves its source and meets its target: slot i of n down that router's side
     private int[] outSlot = new int[0];
     private int[] outCount = new int[0];
@@ -139,7 +138,7 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
         }
     }
 
-    // Flags setups that can't move anything, so a broken link stands out without opening every router.
+    // Flags setups that have a broken or missing link.
     private void findIssues() {
         List<Node> nodes = snapshot.nodes();
         int size = nodes.size();
@@ -607,7 +606,6 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
     }
 
     private void drawHoverTooltip(GuiGraphicsExtractor guiGraphics, Font font, int mouseX, int mouseY) {
-        // tooltips would cover the rename box while typing
         // nothing should cover the rename box while typing, or the drop target while dragging a link
         if (nameBox != null || linkFrom >= 0 || tabDown()) return;
 

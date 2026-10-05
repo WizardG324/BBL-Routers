@@ -1,5 +1,6 @@
 package com.benbenlaw.routers.screen;
 
+import com.benbenlaw.routers.api.NamedRouter;
 import com.benbenlaw.routers.api.RouterButtonTypes;
 import com.benbenlaw.routers.api.screen.client.RouterUIRenderers;
 import com.benbenlaw.routers.transfers.RoutersTransfers;
@@ -10,12 +11,12 @@ import com.benbenlaw.routers.manager.ManagerSnapshot;
 import com.benbenlaw.routers.manager.ManagerSnapshot.Edge;
 import com.benbenlaw.routers.manager.ManagerSnapshot.Kind;
 import com.benbenlaw.routers.manager.ManagerSnapshot.Node;
-import com.benbenlaw.routers.api.NamedRouter;
 import com.benbenlaw.routers.networking.packets.EditLinkFromManager;
 import com.benbenlaw.routers.networking.packets.OpenRouterFromManager;
 import com.benbenlaw.routers.networking.packets.RenameRouterFromManager;
 import com.benbenlaw.routers.networking.packets.RequestManagerSnapshot;
 import com.benbenlaw.routers.screen.util.button.ButtonType;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -34,7 +35,9 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMenu> {
 
@@ -201,11 +204,11 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
         // Every link leaving a column turns in the gap after it. Spread those turns across the gap in
         // order of where the link ends up, so they sit side by side instead of piling up in the middle.
         laneX = new int[edges.size()];
-        java.util.Map<Integer, List<Integer>> byColumn = new java.util.HashMap<>();
+        Map<Integer, List<Integer>> byColumn = new HashMap<>();
         for (int e = 0; e < edges.size(); e++) {
             byColumn.computeIfAbsent(layout.x[edges.get(e).from()], key -> new ArrayList<>()).add(e);
         }
-        for (java.util.Map.Entry<Integer, List<Integer>> column : byColumn.entrySet()) {
+        for (Map.Entry<Integer, List<Integer>> column : byColumn.entrySet()) {
             List<Integer> lanes = column.getValue();
             lanes.sort((a, b) -> {
                 int byTarget = Integer.compare(layout.y[edges.get(a).to()], layout.y[edges.get(b).to()]);
@@ -910,7 +913,7 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
     }
 
     private boolean tabDown() {
-        return tabHeld || com.mojang.blaze3d.platform.InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_TAB);
+        return tabHeld || InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_TAB);
     }
 
     private boolean ctrlDown() {

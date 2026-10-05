@@ -1,6 +1,7 @@
 package com.benbenlaw.routers.manager;
 
 import com.benbenlaw.routers.Routers;
+import com.benbenlaw.routers.api.NamedRouter;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -36,7 +37,8 @@ public record ManagerSnapshot(List<Node> nodes, List<Edge> edges, boolean trunca
         }
     }
 
-    public record Node(GlobalPos pos, Kind kind, ItemStack adjacent, int exporterFlags, int importerFlags, boolean working) {}
+    // name is the player-given name from the Router Manager, empty when unnamed
+    public record Node(GlobalPos pos, Kind kind, ItemStack adjacent, int exporterFlags, int importerFlags, boolean working, String name) {}
 
     // types is the ITEM/FLUID/ENERGY mask of what the exporting end can send down this link.
     // viaInventory marks an importer feeding an exporter that sits on the same inventory.
@@ -52,6 +54,7 @@ public record ManagerSnapshot(List<Node> nodes, List<Edge> edges, boolean trunca
                     buf.writeVarInt(node.exporterFlags);
                     buf.writeVarInt(node.importerFlags);
                     buf.writeBoolean(node.working);
+                    buf.writeUtf(node.name, NamedRouter.MAX_NAME_LENGTH);
                 }
                 buf.writeVarInt(snapshot.edges.size());
                 for (Edge edge : snapshot.edges) {
@@ -72,7 +75,8 @@ public record ManagerSnapshot(List<Node> nodes, List<Edge> edges, boolean trunca
                             ItemStack.OPTIONAL_STREAM_CODEC.decode(buf),
                             buf.readVarInt(),
                             buf.readVarInt(),
-                            buf.readBoolean()));
+                            buf.readBoolean(),
+                            buf.readUtf(NamedRouter.MAX_NAME_LENGTH)));
                 }
                 int edgeCount = buf.readVarInt();
                 List<Edge> edges = new ArrayList<>(edgeCount);

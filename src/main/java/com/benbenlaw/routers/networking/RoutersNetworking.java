@@ -18,6 +18,8 @@ public class RoutersNetworking {
         registrar.playToServer(ToggleHybridSide.TYPE, ToggleHybridSide.STREAM_CODEC, ToggleHybridSide.HANDLER);
         registrar.playToServer(RequestManagerSnapshot.TYPE, RequestManagerSnapshot.STREAM_CODEC, RequestManagerSnapshot.HANDLER);
         registrar.playToServer(OpenRouterFromManager.TYPE, OpenRouterFromManager.STREAM_CODEC, OpenRouterFromManager.HANDLER);
+        registrar.playToServer(RenameRouterFromManager.TYPE, RenameRouterFromManager.STREAM_CODEC, RenameRouterFromManager.HANDLER);
+        registrar.playToServer(EditLinkFromManager.TYPE, EditLinkFromManager.STREAM_CODEC, EditLinkFromManager.HANDLER);
         registrar.playToClient(ManagerSnapshot.TYPE, ManagerSnapshot.STREAM_CODEC, RouterManagerClientHandler::handle);
 
         registrar.playToServer(SyncFilterValue.TYPE, SyncFilterValue.STREAM_CODEC, SyncFilterValue.HANDLER);

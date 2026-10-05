@@ -1,5 +1,6 @@
 package com.benbenlaw.routers.manager;
 
+import com.benbenlaw.routers.api.NamedRouter;
 import com.benbenlaw.routers.api.RouterButtonTypes;
 import com.benbenlaw.routers.block.custom.RouterBlock;
 import com.benbenlaw.routers.block.entity.DistributorBlockEntity;
@@ -188,6 +189,15 @@ public class ManagerScanner {
         return GlobalPos.of(routerPos.dimension(), target);
     }
 
+    // Whether a loaded router in the manager's dimension is part of its charted network, so packets
+    // from the manager screen can only reach routers the player could see in it.
+    public static boolean isCharted(ServerLevel level, BlockPos managerPos, BlockPos targetPos) {
+        if (!level.isLoaded(targetPos)) return false;
+        GlobalPos target = GlobalPos.of(level.dimension(), targetPos);
+        return scan(level, managerPos).nodes().stream()
+                .anyMatch(node -> node.pos().equals(target) && node.kind() != Kind.UNLOADED);
+    }
+
     private static boolean isRouter(BlockEntity blockEntity) {
         return blockEntity instanceof ExporterBlockEntity || blockEntity instanceof ImporterHost;
     }
@@ -199,7 +209,7 @@ public class ManagerScanner {
 
     private static Node describe(GlobalPos pos, ServerLevel level, BlockEntity blockEntity) {
         if (level == null || blockEntity == null || !isRouter(blockEntity)) {
-            return new Node(pos, Kind.UNLOADED, ItemStack.EMPTY, 0, 0, true);
+            return new Node(pos, Kind.UNLOADED, ItemStack.EMPTY, 0, 0, true, "");
         }
 
         BlockState state = blockEntity.getBlockState();
@@ -234,7 +244,9 @@ public class ManagerScanner {
             importerFlags = importerFlags(importerHost.getImporterCore());
         }
 
-        return new Node(pos, kind, adjacent, exporterFlags, importerFlags, working);
+        String name = blockEntity instanceof NamedRouter named ? named.getRouterName() : "";
+
+        return new Node(pos, kind, adjacent, exporterFlags, importerFlags, working, name);
     }
 
     private static int exporterFlags(ExporterBlockEntity exporter) {

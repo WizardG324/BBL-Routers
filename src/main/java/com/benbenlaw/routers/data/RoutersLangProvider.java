@@ -102,6 +102,23 @@ public class RoutersLangProvider extends LanguageProvider {
         add("gui.routers.manager.cannot_locate_dimension", "That Router is in another dimension, so it cannot be highlighted");
         add("gui.routers.manager.cannot_open_unloaded", "That Router is not loaded");
         add("gui.routers.manager.cannot_open_dimension", "That Router is in another dimension");
+        add("gui.routers.manager.cannot_rename_dimension", "That Router is in another dimension, so it cannot be renamed from here");
+        add("gui.routers.manager.middle_click_to_rename", "Middle click to rename");
+        add("gui.routers.manager.ctrl_drag_to_link", "Ctrl + drag to another Router to link");
+        add("gui.routers.manager.ctrl_right_click_link", "Ctrl + right click a link to remove it");
+        add("gui.routers.manager.hold_tab", "Hold TAB to hide tooltips");
+        add("gui.routers.manager.link", "%s -> %s");
+        add("gui.routers.manager.right_click_to_unlink", "Right click to remove this link");
+        add("gui.routers.manager.ctrl_right_click_to_unlink", "Ctrl + right click to remove this link");
+        add("gui.routers.manager.sends_to", "Sends to: %s");
+        add("gui.routers.manager.fed_by", "Fed by: %s");
+        add("gui.routers.manager.pick_a_link", "That Router has several links, Ctrl + right click the link itself to remove it");
+        add("gui.routers.manager.rename_hint", "Router name, Enter to save");
+        add("gui.routers.manager.issue.no_importer", "Not linked to any Importer");
+        add("gui.routers.manager.issue.no_exporter", "Not linked to any Exporter");
+        add("gui.routers.manager.issue.no_links", "Not linked to anything");
+        add("gui.routers.manager.issue.unloaded_link", "Linked to an unloaded or missing Router");
+        add("gui.routers.manager.issue.needs_dimensional", "Linked to another dimension without a Dimensional upgrade");
 
         add("tooltip.routers.importer_exporter.switch_to_importer", "Switch to Importer settings");
         add("tooltip.routers.importer_exporter.switch_to_exporter", "Switch to Exporter settings");

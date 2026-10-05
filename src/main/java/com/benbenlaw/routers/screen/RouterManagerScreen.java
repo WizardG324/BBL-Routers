@@ -38,7 +38,7 @@ import java.util.List;
 
 public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMenu> {
 
-    private static final int PANEL_WIDTH = 360;
+    private static final int MIN_PANEL_WIDTH = 360;
     private static final int PANEL_HEIGHT = 224;
     private static final int REFRESH_TICKS = 40;
 
@@ -96,7 +96,7 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
     private final ItemStack distributorIcon = new ItemStack(RoutersBlocks.DISTRIBUTOR.get());
 
     public RouterManagerScreen(RouterManagerMenu menu, Inventory inventory, Component component) {
-        super(menu, inventory, component, PANEL_WIDTH, PANEL_HEIGHT);
+        super(menu, inventory, component, panelWidth(), PANEL_HEIGHT);
     }
 
     @Override
@@ -583,11 +583,24 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
         guiGraphics.text(font, hint, hintX, topPos + 8, truncated ? 0xFFE0A040 : 0xFF808080, false);
     }
 
+    // Wide enough for the legend, which gains an entry for every resource type an addon registers.
+    private static int panelWidth() {
+        Font font = Minecraft.getInstance().font;
+        int legend = 0;
+        for (ButtonType type : RouterButtonTypes.all()) legend += legendWidth(font, type.getLegendKey());
+        legend += legendWidth(font, "gui.routers.manager.legend.inventory");
+        return Math.max(MIN_PANEL_WIDTH, legend + 16);
+    }
+
+    private static int legendWidth(Font font, String key) {
+        return 14 + font.width(Component.translatable(key)) + 12;
+    }
+
     private int legendEntry(GuiGraphicsExtractor guiGraphics, Font font, int x, int y, int color, String key, boolean dashed) {
         horizontal(guiGraphics, x, x + 9, y + 4, color, dashed);
         Component label = Component.translatable(key);
         guiGraphics.text(font, label, x + 14, y, 0xFFC0C0C0, false);
-        return x + 14 + font.width(label) + 12;
+        return x + legendWidth(font, key);
     }
 
     private void drawHoverTooltip(GuiGraphicsExtractor guiGraphics, Font font, int mouseX, int mouseY) {

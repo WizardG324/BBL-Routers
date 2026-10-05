@@ -1,4 +1,4 @@
-package com.benbenlaw.routers.integration;
+package com.benbenlaw.routers.integration.jei;
 
 import com.benbenlaw.core.integration.jei.GhostFilter;
 import com.benbenlaw.routers.Routers;

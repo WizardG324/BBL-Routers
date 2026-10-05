@@ -35,7 +35,7 @@ public class FilterMenu extends SimpleAbstractContainerMenu {
     public FilterMenu(int containerID, Inventory inventory, FriendlyByteBuf extraData) {
         this(containerID, inventory,
                 extraData.readBlockPos(),
-                RouterButtonTypes.BUTTONS.get(extraData.readIdentifier()),
+                RouterButtonTypes.get(extraData.readIdentifier()),
                 new SimpleContainerData(2));
     }
 
@@ -52,7 +52,7 @@ public class FilterMenu extends SimpleAbstractContainerMenu {
 
             for (ScreenModule module : registry) {
                 // Compare the registered ButtonType instances
-                if (module.buttonType() == buttonType) {
+                if (module.buttonType().equals(buttonType.getId())) {
                     module.slotAdder().accept(this, blockEntity, 0);
                     break;
                 }

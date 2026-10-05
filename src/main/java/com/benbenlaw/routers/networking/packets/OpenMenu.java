@@ -39,7 +39,7 @@ public record OpenMenu(BlockPos blockPos, ButtonType buttonType) implements Cust
     public static final StreamCodec<RegistryFriendlyByteBuf, OpenMenu> STREAM_CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC, OpenMenu::blockPos,
             Identifier.STREAM_CODEC.map(
-                    RouterButtonTypes.BUTTONS::get,
+                    RouterButtonTypes::get,
                     ButtonType::getId
             ), OpenMenu::buttonType,
             OpenMenu::new

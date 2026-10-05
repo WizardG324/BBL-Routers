@@ -24,7 +24,7 @@ public class RouterUIRegistries {
     // Item Menu
     public static final DeferredHolder<ScreenModule, ScreenModule> ITEM_FILTER =
             SCREEN_MODULES.register("item_filter", () -> new ScreenModule(
-                    RouterButtonTypes.ITEM_FILTER,
+                    RouterButtonTypes.ITEM,
                     (menu, entity, x) -> {
                         for (int i = 0; i < 18; i++) {
                             int row = i / 9;
@@ -38,7 +38,7 @@ public class RouterUIRegistries {
     // Fluid Menu
     public static final DeferredHolder<ScreenModule, ScreenModule> FLUID_FILTER =
             SCREEN_MODULES.register("fluid_filter", () -> new ScreenModule(
-                    RouterButtonTypes.FLUID_FILTER,
+                    RouterButtonTypes.FLUID,
                     (menu, entity, x) -> {
                         SimpleContainer dummy = new SimpleContainer(18);
                         for (int i = 0; i < 18; i++) {
@@ -53,7 +53,7 @@ public class RouterUIRegistries {
     // Energy Menu
     public static final DeferredHolder<ScreenModule, ScreenModule> ENERGY_FILTER =
             SCREEN_MODULES.register("energy_filter", () -> new ScreenModule(
-                    RouterButtonTypes.ENERGY_FILTER,
+                    RouterButtonTypes.ENERGY,
                     (menu, entity, x) -> {
                         // Keep empty if only rendering text on the client
                     }

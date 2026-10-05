@@ -1,6 +1,7 @@
 package com.benbenlaw.routers.block.entity.renderer;
 
 import com.benbenlaw.routers.api.RouterButtonTypes;
+import com.benbenlaw.routers.api.screen.client.RouterUIRenderers;
 import com.benbenlaw.routers.block.custom.ExporterBlock;
 import com.benbenlaw.routers.block.custom.ImporterBlock;
 import com.benbenlaw.routers.block.entity.ExporterBlockEntity;
@@ -236,8 +237,8 @@ public class ExporterBlockEntityRenderer
     private float[] getBeamTint(ItemStack stack) {
         if (stack.isEmpty()) return new float[]{0f, 0f, 0f};
 
-        for (ButtonType type : RouterButtonTypes.BUTTONS.values()) {
-            if (stack.is(type.getUnlockedBy())) return type.getColor();
+        for (ButtonType type : RouterButtonTypes.all()) {
+            if (stack.is(type.getUnlockedBy())) return RouterUIRenderers.getColor(type);
         }
 
         return new float[]{0f, 0f, 0f};

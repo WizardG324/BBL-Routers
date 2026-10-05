@@ -72,7 +72,7 @@ public class ImporterExporterScreen extends AbstractContainerScreen<ImporterExpo
         ConfigurableRouterBlockEntity configurable = menu.getBlockEntity().getActiveConfigurable();
         boolean importerSide = menu.importerSide;
 
-        long visibleCount = RouterButtonTypes.BUTTONS.values().stream()
+        long visibleCount = RouterButtonTypes.all().stream()
                 .filter(type -> importerSide || configurable.hasUpgrade(type))
                 .count();
 
@@ -81,7 +81,7 @@ public class ImporterExporterScreen extends AbstractContainerScreen<ImporterExpo
 
         int index = 0;
 
-        for (ButtonType type : RouterButtonTypes.BUTTONS.values()) {
+        for (ButtonType type : RouterButtonTypes.all()) {
             boolean visible = importerSide || configurable.hasUpgrade(type);
 
             if (visible) {

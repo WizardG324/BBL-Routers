@@ -1,9 +1,10 @@
 package com.benbenlaw.routers.block.entity;
 
-import com.benbenlaw.routers.api.transfers.DistributorHandlers;
+import com.benbenlaw.routers.api.TransferModule;
 import com.benbenlaw.routers.block.RoutersBlockEntities;
 import com.benbenlaw.routers.block.custom.RouterBlock;
 import com.benbenlaw.routers.config.StartupConfig;
+import com.benbenlaw.routers.transfers.RoutersTransfers;
 import com.benbenlaw.routers.util.RoutersTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -18,11 +19,6 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.item.ItemResource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
@@ -33,16 +29,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// Never ticks and has no storage of its own. Exporters link to it like an importer, and whatever they push
-// into it is passed straight on to the machines around it, as far as its own upgrades and filters allow.
-// It reuses the Exporter's upgrade slots, filters and screen for that configuration.
 public class DistributorBlockEntity extends ExporterBlockEntity implements ImporterHost {
 
     private final ImporterCore importerCore = new ImporterCore(this);
 
-    private final DistributorHandlers.Items itemDistributor = new DistributorHandlers.Items(this);
-    private final DistributorHandlers.Fluids fluidDistributor = new DistributorHandlers.Fluids(this);
-    private final DistributorHandlers.Energy energyDistributor = new DistributorHandlers.Energy(this);
+    private final Map<TransferModule<?>, Object> distributors = new HashMap<>();
 
     private List<Target> targets = List.of();
     private long nextRefresh;
@@ -66,22 +57,12 @@ public class DistributorBlockEntity extends ExporterBlockEntity implements Impor
     }
 
     @Nullable
-    public ResourceHandler<ItemResource> getItemDistributor() {
-        return hasCorrectUpgrade(RoutersTags.Items.ITEM_UPGRADES) ? itemDistributor : null;
+    @SuppressWarnings("unchecked")
+    public <H> H getDistributor(TransferModule<H> module) {
+        if (!hasCorrectUpgrade(module.upgradeTag())) return null;
+        return (H) distributors.computeIfAbsent(module, key -> module.createDistributor(this));
     }
 
-    @Nullable
-    public ResourceHandler<FluidResource> getFluidDistributor() {
-        return hasCorrectUpgrade(RoutersTags.Items.FLUID_UPGRADES) ? fluidDistributor : null;
-    }
-
-    @Nullable
-    public EnergyHandler getEnergyDistributor() {
-        return hasCorrectUpgrade(RoutersTags.Items.RF_UPGRADES) ? energyDistributor : null;
-    }
-
-    // The machines within range. Rebuilt every few seconds rather than every operation, from the loaded
-    // chunks' block entities instead of scanning every position in the cube.
     public List<Target> getTargets(ServerLevel serverLevel) {
         long now = serverLevel.getGameTime();
         if (now >= nextRefresh) {
@@ -132,15 +113,17 @@ public class DistributorBlockEntity extends ExporterBlockEntity implements Impor
     }
 
     private static boolean exposesAnything(ServerLevel level, BlockPos pos, Direction side) {
-        return level.getCapability(Capabilities.Item.BLOCK, pos, side) != null
-                || level.getCapability(Capabilities.Item.BLOCK, pos, null) != null
-                || level.getCapability(Capabilities.Fluid.BLOCK, pos, side) != null
-                || level.getCapability(Capabilities.Fluid.BLOCK, pos, null) != null
-                || level.getCapability(Capabilities.Energy.BLOCK, pos, side) != null
-                || level.getCapability(Capabilities.Energy.BLOCK, pos, null) != null;
+        for (TransferModule<?> module : RoutersTransfers.TRANSFER_MODULES_REGISTRY) {
+            if (exposes(level, module, pos, side)) return true;
+        }
+        return false;
     }
 
-    // the face of the machine that points at the distributor
+    private static <H> boolean exposes(ServerLevel level, TransferModule<H> module, BlockPos pos, Direction side) {
+        return level.getCapability(module.capability(), pos, side) != null
+                || level.getCapability(module.capability(), pos, null) != null;
+    }
+
     private static Direction sideToward(BlockPos machine, BlockPos distributor) {
         int dx = distributor.getX() - machine.getX();
         int dy = distributor.getY() - machine.getY();
@@ -155,13 +138,10 @@ public class DistributorBlockEntity extends ExporterBlockEntity implements Impor
         return dz > 0 ? Direction.SOUTH : Direction.NORTH;
     }
 
-    // One machine in range, with its capabilities looked up once and then kept up to date by the cache.
     public static final class Target {
         private final BlockPos pos;
-        private final Lookup<ResourceHandler<ItemResource>> items = new Lookup<>(Capabilities.Item.BLOCK);
-        private final Lookup<ResourceHandler<FluidResource>> fluids = new Lookup<>(Capabilities.Fluid.BLOCK);
-        private final Lookup<EnergyHandler> energy = new Lookup<>(Capabilities.Energy.BLOCK);
         private final Direction side;
+        private final Map<BlockCapability<?, Direction>, Lookup<?>> lookups = new HashMap<>();
 
         private Target(BlockPos pos, Direction side) {
             this.pos = pos;
@@ -169,18 +149,10 @@ public class DistributorBlockEntity extends ExporterBlockEntity implements Impor
         }
 
         @Nullable
-        public ResourceHandler<ItemResource> items(ServerLevel level) {
-            return items.get(level, pos, side);
-        }
-
-        @Nullable
-        public ResourceHandler<FluidResource> fluids(ServerLevel level) {
-            return fluids.get(level, pos, side);
-        }
-
-        @Nullable
-        public EnergyHandler energy(ServerLevel level) {
-            return energy.get(level, pos, side);
+        @SuppressWarnings("unchecked")
+        public <H> H get(BlockCapability<H, Direction> capability, ServerLevel level) {
+            Lookup<H> lookup = (Lookup<H>) lookups.computeIfAbsent(capability, key -> new Lookup<>(capability));
+            return lookup.get(level, pos, side);
         }
     }
 

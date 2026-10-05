@@ -1,4 +1,4 @@
-// 26.1.2	2026-10-04T10:57:57.1799731	routers Models
+// 26.1.2	2026-10-04T12:28:44.5363884	routers Models
 50f3ba349d012414e4c856fc66a3af6ce3a6602b assets/routers/blockstates/router_manager.json
 ee065ab5ed5fc664a1446b46951a00bf7dd02c2e assets/routers/items/blacklist_upgrade.json
 35a6161747fc1c128b75e733150e33636d5c6462 assets/routers/items/connector.json
@@ -24,6 +24,11 @@ d1958313daea5b92fff1f20c4963b7007889dfa0 assets/routers/items/mod_filter.json
 65d76a9f447b3f12a75d634ce236e4f8e092d99b assets/routers/items/rf_upgrade_3.json
 7fd2313eb37d536d7f4f3055c411ee0bcf34c5b6 assets/routers/items/rf_upgrade_4.json
 5809907c131999d4a2969d82227656d4a1db1150 assets/routers/items/rf_upgrade_5.json
+36ca957cd61a9760d47713d4f0911f463211b92d assets/routers/items/rift_energy_upgrade_1.json
+6975b646deee7a81886dd0b1c9070e4c368a65ea assets/routers/items/rift_energy_upgrade_2.json
+9fefc8465a9fa4ed94f88657af583fabe5fb4118 assets/routers/items/rift_energy_upgrade_3.json
+e1c00967f03b17b04e3f2f6b5b31fb4ac21cb580 assets/routers/items/rift_energy_upgrade_4.json
+bd4f089fd27a3a52596ba9d71d8b4b13be842ba4 assets/routers/items/rift_energy_upgrade_5.json
 26d034f70f34cc909afbc895f56f375e6f57adba assets/routers/items/round_robin_upgrade.json
 f9987ebbf2273ba4765728d3563c3bc22bad47bd assets/routers/items/router_manager.json
 95887e1d4496bf892bf1d39d3f4f5e3e650f9e45 assets/routers/items/speed_upgrade_1.json
@@ -54,6 +59,11 @@ cc1e725d3e9e9929b220c242d7fc394a47bb1a48 assets/routers/models/item/rf_upgrade_1
 fd236305d78ab5274c66ce85a026964ac36b9d57 assets/routers/models/item/rf_upgrade_3.json
 26cb8b66d231f94041d9c0758f77b166db924624 assets/routers/models/item/rf_upgrade_4.json
 877c559b9a4960829bd8de57ee7aa15ad82447fc assets/routers/models/item/rf_upgrade_5.json
+33fb28a906a5fe95b89fdfcadd1bf51d65588d19 assets/routers/models/item/rift_energy_upgrade_1.json
+59434e6f53e1f847fb5b811b0785bf85c0731e2b assets/routers/models/item/rift_energy_upgrade_2.json
+fc38ea3c55f30b50c9cf56d8fcb1021af1336e65 assets/routers/models/item/rift_energy_upgrade_3.json
+e6840e9b939eb8c99256fa2233a5b25111fb29f9 assets/routers/models/item/rift_energy_upgrade_4.json
+ecb95e23c05bcb16eb129ba92028b02a0d261b35 assets/routers/models/item/rift_energy_upgrade_5.json
 94fe2585380221940ff416c23bb786cf65fc4822 assets/routers/models/item/round_robin_upgrade.json
 39e7c7eca5136982914f9ae4a0105f4425425103 assets/routers/models/item/speed_upgrade_1.json
 f3893b2212ebbfb953c033304283cc94de2d7a43 assets/routers/models/item/speed_upgrade_2.json

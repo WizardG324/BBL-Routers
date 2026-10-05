@@ -7,6 +7,7 @@ import com.benbenlaw.routers.block.RoutersBlocks;
 import com.benbenlaw.routers.block.entity.renderer.ExporterBlockEntityRenderer;
 import com.benbenlaw.routers.config.StartupConfig;
 import com.benbenlaw.routers.gametest.RoutersGameTests;
+import com.benbenlaw.routers.integration.rifts.RiftsIntegration;
 import com.benbenlaw.routers.item.RoutersCreativeTab;
 import com.benbenlaw.routers.item.RoutersDataComponents;
 import com.benbenlaw.routers.item.RoutersItems;
@@ -19,6 +20,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
@@ -51,6 +53,11 @@ public class Routers {
 
         eventBus.addListener(this::commonSetup);
         eventBus.addListener(RoutersGameTests::registerTests);
+        eventBus.addListener(RoutersGameTests::registerTestCapabilities);
+
+        if (ModList.get().isLoaded("rifts")) {
+            RiftsIntegration.register(eventBus);
+        }
 
         if (Dist.CLIENT.isClient()) {
             eventBus.addListener(this::onClientSetup);
@@ -85,6 +92,10 @@ public class Routers {
 
     private void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(RouterUIRenderers::init);
+
+        if (ModList.get().isLoaded("rifts")) {
+            event.enqueueWork(RiftsIntegration::clientInit);
+        }
     }
 
     public static Identifier identifier(String path) {

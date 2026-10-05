@@ -1,13 +1,19 @@
 package com.benbenlaw.routers.api.transfers;
 
 import com.benbenlaw.routers.api.ImporterPullEngine;
+import com.benbenlaw.routers.api.TransferModule;
 import com.benbenlaw.routers.api.TransferEngine;
 import com.benbenlaw.routers.block.entity.DistributorBlockEntity;
 import com.benbenlaw.routers.block.entity.ExporterBlockEntity;
 import com.benbenlaw.routers.block.entity.ImporterCore;
 import com.benbenlaw.routers.config.StartupConfig;
 import com.benbenlaw.routers.util.RoutersTags;
+import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.neoforged.neoforge.capabilities.BlockCapability;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
@@ -16,9 +22,25 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 import javax.annotation.Nullable;
 
-public class FluidTransfer {
+public class FluidTransfer implements TransferModule<ResourceHandler<FluidResource>> {
 
-    public static int transferFluids(ServerLevel level, ExporterBlockEntity exporter) {
+    @Override
+    public TagKey<Item> upgradeTag() {
+        return RoutersTags.Items.FLUID_UPGRADES;
+    }
+
+    @Override
+    public BlockCapability<ResourceHandler<FluidResource>, Direction> capability() {
+        return Capabilities.Fluid.BLOCK;
+    }
+
+    @Override
+    public ResourceHandler<FluidResource> createDistributor(DistributorBlockEntity distributor) {
+        return new DistributorHandlers.Fluids(distributor);
+    }
+
+    @Override
+    public int push(ServerLevel level, ExporterBlockEntity exporter) {
 
         if (exporter.getFluidScanState().shouldSkip(level.getGameTime())) return exporter.lastImporterIndex;
 
@@ -62,19 +84,20 @@ public class FluidTransfer {
         return result;
     }
 
-    private static ResourceHandler<FluidResource> getTargetHandler(ServerLevel level, ExporterBlockEntity exporter, GlobalPos pos) {
+    private ResourceHandler<FluidResource> getTargetHandler(ServerLevel level, ExporterBlockEntity exporter, GlobalPos pos) {
         ServerLevel targetLevel = level.getServer().getLevel(pos.dimension());
         if (targetLevel == null || (!pos.dimension().equals(level.dimension()) && !exporter.canDoDimensionalTravel())) return null;
         if (!targetLevel.isLoaded(pos.pos())) return null;
 
         if (targetLevel.getBlockEntity(pos.pos()) instanceof DistributorBlockEntity distributor) {
-            return distributor.getFluidDistributor();
+            return distributor.getDistributor(this);
         }
 
         return exporter.getFluidTargetCache().get(targetLevel, pos);
     }
 
-    public static int pullFluids(ServerLevel level, ImporterCore importer) {
+    @Override
+    public int pull(ServerLevel level, ImporterCore importer) {
 
         if (importer.getFluidScanState().shouldSkip(level.getGameTime())) return importer.lastExporterIndex;
 

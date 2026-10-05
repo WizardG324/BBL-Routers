@@ -16,6 +16,7 @@ public class RoutersTags {
         public static final TagKey<Item> DISTRIBUTOR_UPGRADES = tag("upgrades/distributor");
 
         public static final TagKey<Item> RF_UPGRADES = tag("rf_upgrades");
+        public static final TagKey<Item> RIFT_ENERGY_UPGRADES = tag("rift_energy_upgrades");
         public static final TagKey<Item> ITEM_UPGRADES = tag("item_upgrades");
         public static final TagKey<Item> FLUID_UPGRADES = tag("fluid_upgrades");
         public static final TagKey<Item> CHEMICAL_UPGRADES = tag("chemical_upgrades");

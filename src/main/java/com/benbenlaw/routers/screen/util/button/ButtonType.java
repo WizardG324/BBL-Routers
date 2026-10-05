@@ -1,48 +1,39 @@
 package com.benbenlaw.routers.screen.util.button;
 
-import com.benbenlaw.routers.item.RoutersItems;
-import com.benbenlaw.routers.util.RoutersTags;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 
+// The filter button for one resource type. Everything but the upgrade tag follows from the id, so for a resource
+// registered as "namespace:name" the files and lang keys are:
+//   sprite          namespace:filter_buttons/name (and name_hover)
+//   tooltips        tooltip.namespace.button.name, tooltip.namespace.button.name.locked, tooltip.namespace.menu.name
+//   chart legend    gui.namespace.manager.legend.name
+// The colour used for beams and chart links is set on the client in RouterUIRenderers.
 public class ButtonType {
     private final Identifier id;
-    private final int xOffset;
-    private final int yOffset;
-    private final String texture;
-    private final String textureHover;
-    private final String buttonTooltip;
-    private final String lockedTooltip;
-    private final String menuName;
     private final TagKey<Item> unlockedBy;
-    private final float[] color;
 
-    public ButtonType(Identifier id, int xOffset, int yOffset, String texture, String textureHover,
-                      String buttonTooltip, String lockedTooltip, String menuName, TagKey<Item> unlockedBy, float[] color) {
+    public ButtonType(Identifier id, TagKey<Item> unlockedBy) {
         this.id = id;
-        this.xOffset = xOffset;
-        this.yOffset = yOffset;
-        this.texture = texture;
-        this.textureHover = textureHover;
-        this.buttonTooltip = buttonTooltip;
-        this.lockedTooltip = lockedTooltip;
-        this.menuName = menuName;
         this.unlockedBy = unlockedBy;
-        this.color = color;
     }
 
     public Identifier getId() { return id; }
-    public int getOffsetX() { return xOffset; }
-    public int getOffsetY() { return yOffset; }
-    public String getTexture() { return texture; }
-    public String getTextureHover() { return textureHover; }
-    public String getButtonTooltip() { return buttonTooltip; }
-    public String getLockedTooltip() { return lockedTooltip; }
-    public String getMenuName() { return menuName; }
     public TagKey<Item> getUnlockedBy() { return unlockedBy; }
-    public float[] getColor() { return color; }
 
+    public Identifier getTexture() {
+        return Identifier.fromNamespaceAndPath(id.getNamespace(), "filter_buttons/" + id.getPath());
+    }
+
+    public Identifier getTextureHover() {
+        return Identifier.fromNamespaceAndPath(id.getNamespace(), "filter_buttons/" + id.getPath() + "_hover");
+    }
+
+    public String getButtonTooltip() { return "tooltip." + id.getNamespace() + ".button." + id.getPath(); }
+    public String getLockedTooltip() { return getButtonTooltip() + ".locked"; }
+    public String getMenuName() { return "tooltip." + id.getNamespace() + ".menu." + id.getPath(); }
+    public String getLegendKey() { return "gui." + id.getNamespace() + ".manager.legend." + id.getPath(); }
 
     public static float[] hex(String hex) {
         int color = Integer.parseInt(hex, 16);

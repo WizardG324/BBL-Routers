@@ -4,6 +4,7 @@ import com.benbenlaw.core.block.entity.handler.item.FilterItemHandler;
 import com.benbenlaw.routers.block.entity.DistributorBlockEntity;
 import com.benbenlaw.routers.util.RoutersTags;
 import net.minecraft.server.level.ServerLevel;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
@@ -15,10 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntBinaryOperator;
 
-// What an exporter sees when it pushes into a Distributor. There is nothing to store: each insert is passed
-// straight on to the machines in range inside the exporter's own transaction, so if the exporter's extract
-// fails the whole thing rolls back. What gets accepted is capped by the distributor's own upgrade and
-// narrowed by its own filter.
 public class DistributorHandlers {
 
     public static class Items implements ResourceHandler<ItemResource> {
@@ -46,7 +43,7 @@ public class DistributorHandlers {
 
             List<ResourceHandler<ItemResource>> handlers = new ArrayList<>();
             for (DistributorBlockEntity.Target target : distributor.getTargets(level)) {
-                ResourceHandler<ItemResource> handler = target.items(level);
+                ResourceHandler<ItemResource> handler = target.get(Capabilities.Item.BLOCK, level);
                 if (handler != null) handlers.add(handler);
             }
 
@@ -87,7 +84,7 @@ public class DistributorHandlers {
 
             List<ResourceHandler<FluidResource>> handlers = new ArrayList<>();
             for (DistributorBlockEntity.Target target : distributor.getTargets(level)) {
-                ResourceHandler<FluidResource> handler = target.fluids(level);
+                ResourceHandler<FluidResource> handler = target.get(Capabilities.Fluid.BLOCK, level);
                 if (handler != null) handlers.add(handler);
             }
 
@@ -123,7 +120,7 @@ public class DistributorHandlers {
 
             List<EnergyHandler> handlers = new ArrayList<>();
             for (DistributorBlockEntity.Target target : distributor.getTargets(level)) {
-                EnergyHandler handler = target.energy(level);
+                EnergyHandler handler = target.get(Capabilities.Energy.BLOCK, level);
                 if (handler != null) handlers.add(handler);
             }
 
@@ -136,15 +133,11 @@ public class DistributorHandlers {
         @Override public int extract(int amount, TransactionContext transaction) { return 0; }
     }
 
-    // Shares an amount out between the machines. Normally every machine gets an even share first and any
-    // leftovers (from machines that were full) are offered around again; with a Round Robin upgrade the
-    // whole amount goes to one machine at a time instead. The starting machine rotates so remainders and
-    // single-item operations don't always land on the same one.
-    private static final class Spreader {
+    public static final class Spreader {
 
         private int next;
 
-        int spread(int total, int count, boolean single, IntBinaryOperator insertInto) {
+        public int spread(int total, int count, boolean single, IntBinaryOperator insertInto) {
             if (count <= 0 || total <= 0) return 0;
 
             int start = next % count;

@@ -1,6 +1,7 @@
 package com.benbenlaw.routers.data;
 
 import com.benbenlaw.routers.Routers;
+import com.benbenlaw.routers.integration.rifts.RiftsIntegration;
 import com.benbenlaw.routers.item.RoutersItems;
 import com.benbenlaw.routers.util.RoutersTags;
 import net.minecraft.core.HolderLookup;
@@ -50,6 +51,14 @@ public class RoutersItemTagsProvider extends ItemTagsProvider {
                 .add(RoutersItems.BLACKLIST_UPGRADE.get())
                 .add(RoutersItems.IGNORE_NBT_UPGRADE.get())
         ;
+
+        //Rift Energy Upgrades (optional entries so the tag still loads without BBL Rifts)
+        for (var upgrade : RiftsIntegration.RIFT_ENERGY_UPGRADES) {
+            this.tag(RoutersTags.Items.RIFT_ENERGY_UPGRADES).addOptional(upgrade.get());
+        }
+
+        this.tag(RoutersTags.Items.EXPORTER_UPGRADES).addOptionalTag(RoutersTags.Items.RIFT_ENERGY_UPGRADES);
+        this.tag(RoutersTags.Items.DISTRIBUTOR_UPGRADES).addOptionalTag(RoutersTags.Items.RIFT_ENERGY_UPGRADES);
 
         //All Upgrades (union, for general grouping/JEI)
         this.tag(RoutersTags.Items.UPGRADES)

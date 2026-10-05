@@ -5,6 +5,10 @@
     "#routers:rf_upgrades",
     "#routers:round_robin_upgrades",
     "routers:blacklist_upgrade",
-    "routers:ignore_nbt_upgrade"
+    "routers:ignore_nbt_upgrade",
+    {
+      "id": "#routers:rift_energy_upgrades",
+      "required": false
+    }
   ]
 }

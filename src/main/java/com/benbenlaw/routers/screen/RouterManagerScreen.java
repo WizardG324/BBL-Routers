@@ -1,6 +1,8 @@
 package com.benbenlaw.routers.screen;
 
 import com.benbenlaw.routers.api.RouterButtonTypes;
+import com.benbenlaw.routers.api.screen.client.RouterUIRenderers;
+import com.benbenlaw.routers.transfers.RoutersTransfers;
 import com.benbenlaw.routers.block.RoutersBlocks;
 import com.benbenlaw.routers.event.client.ManagerHighlight;
 import com.benbenlaw.routers.manager.ManagerLayout;
@@ -86,7 +88,6 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
         List<GlobalPos> nodes = new ArrayList<>(newSnapshot.nodes().size());
         for (Node node : newSnapshot.nodes()) nodes.add(node.pos());
 
-        // only re-run the layout when the shape of the network changed, so the chart doesn't jump on refresh
         if (layout == null || !nodes.equals(layoutNodes) || !newSnapshot.edges().equals(layoutEdges)) {
             layout = ManagerLayout.compute(nodes.size(), newSnapshot.edges());
             layoutNodes = nodes;
@@ -264,20 +265,19 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
     }
 
     private static int typeColor(ButtonType type) {
-        float[] c = type.getColor();
+        float[] c = RouterUIRenderers.getColor(type);
         return 0xFF000000 | (Math.round(c[0] * 255) << 16) | (Math.round(c[1] * 255) << 8) | Math.round(c[2] * 255);
     }
 
     private static List<Integer> linkColors(int types) {
         List<Integer> colors = new ArrayList<>();
-        if ((types & ManagerSnapshot.ITEM) != 0) colors.add(brighten(typeColor(RouterButtonTypes.ITEM_FILTER)));
-        if ((types & ManagerSnapshot.FLUID) != 0) colors.add(brighten(typeColor(RouterButtonTypes.FLUID_FILTER)));
-        if ((types & ManagerSnapshot.ENERGY) != 0) colors.add(brighten(typeColor(RouterButtonTypes.ENERGY_FILTER)));
+        for (ButtonType type : RouterButtonTypes.all()) {
+            if ((types & RoutersTransfers.bit(type.getId())) != 0) colors.add(brighten(typeColor(type)));
+        }
         if (colors.isEmpty()) colors.add(COLOR_NEUTRAL_LINK);
         return colors;
     }
 
-    // the filter button colours are fairly dark; lift them so they read against the dark chart
     private static int brighten(int argb) {
         int r = Math.min(255, ((argb >> 16) & 0xFF) + 60);
         int g = Math.min(255, ((argb >> 8) & 0xFF) + 60);
@@ -349,9 +349,9 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
         int y = chartBottom() + 7;
         int x = chartLeft();
 
-        x = legendEntry(guiGraphics, font, x, y, brighten(typeColor(RouterButtonTypes.ITEM_FILTER)), "gui.routers.manager.legend.item", false);
-        x = legendEntry(guiGraphics, font, x, y, brighten(typeColor(RouterButtonTypes.FLUID_FILTER)), "gui.routers.manager.legend.fluid", false);
-        x = legendEntry(guiGraphics, font, x, y, brighten(typeColor(RouterButtonTypes.ENERGY_FILTER)), "gui.routers.manager.legend.energy", false);
+        for (ButtonType type : RouterButtonTypes.all()) {
+            x = legendEntry(guiGraphics, font, x, y, brighten(typeColor(type)), type.getLegendKey(), false);
+        }
         legendEntry(guiGraphics, font, x, y, COLOR_NEUTRAL_LINK, "gui.routers.manager.legend.inventory", true);
 
         boolean truncated = snapshot != null && snapshot.truncated();
@@ -391,13 +391,13 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
                 lines.add(Component.translatable("gui.routers.manager.adjacent", node.adjacent().getHoverName()).withStyle(ChatFormatting.GRAY));
             }
             if (node.kind().exports()) {
-                lines.add(Component.translatable("gui.routers.manager.exporter_side", describeFlags(node.exporterFlags())).withStyle(ChatFormatting.RED));
+                lines.add(Component.translatable("gui.routers.manager.exporter_side", describeFlags(node.exporterTypes(), node.exporterFlags())).withStyle(ChatFormatting.RED));
             }
             if (node.kind().imports()) {
-                lines.add(Component.translatable("gui.routers.manager.importer_side", describeFlags(node.importerFlags())).withStyle(ChatFormatting.BLUE));
+                lines.add(Component.translatable("gui.routers.manager.importer_side", describeFlags(node.importerTypes(), node.importerFlags())).withStyle(ChatFormatting.BLUE));
             }
             if (node.kind() == Kind.DISTRIBUTOR) {
-                lines.add(Component.translatable("gui.routers.manager.distributor_side", describeFlags(node.exporterFlags())).withStyle(ChatFormatting.DARK_AQUA));
+                lines.add(Component.translatable("gui.routers.manager.distributor_side", describeFlags(node.exporterTypes(), node.exporterFlags())).withStyle(ChatFormatting.DARK_AQUA));
             }
             if (!node.working()) {
                 lines.add(Component.translatable("gui.routers.manager.disabled").withStyle(ChatFormatting.DARK_RED));
@@ -412,15 +412,15 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
         guiGraphics.tooltip(font, components, mouseX, mouseY, DefaultTooltipPositioner.INSTANCE, null);
     }
 
-    private static String describeFlags(int flags) {
+    private static String describeFlags(int types, int flags) {
         List<String> parts = new ArrayList<>();
 
-        if ((flags & ManagerSnapshot.TYPE_MASK) == 0) {
+        if (types == 0) {
             parts.add(Component.translatable("gui.routers.manager.no_upgrades").getString());
         }
-        if ((flags & ManagerSnapshot.ITEM) != 0) parts.add(Component.translatable("gui.routers.manager.legend.item").getString());
-        if ((flags & ManagerSnapshot.FLUID) != 0) parts.add(Component.translatable("gui.routers.manager.legend.fluid").getString());
-        if ((flags & ManagerSnapshot.ENERGY) != 0) parts.add(Component.translatable("gui.routers.manager.legend.energy").getString());
+        for (ButtonType type : RouterButtonTypes.all()) {
+            if ((types & RoutersTransfers.bit(type.getId())) != 0) parts.add(Component.translatable(type.getLegendKey()).getString());
+        }
         if ((flags & ManagerSnapshot.ROUND_ROBIN) != 0) parts.add(Component.translatable("gui.routers.manager.flag.round_robin").getString());
         if ((flags & ManagerSnapshot.DIMENSIONAL) != 0) parts.add(Component.translatable("gui.routers.manager.flag.dimensional").getString());
         if ((flags & ManagerSnapshot.BLACKLIST) != 0) parts.add(Component.translatable("gui.routers.manager.flag.blacklist").getString());
@@ -453,7 +453,6 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
         if (pressing && event.button() == 0) {
             pressing = false;
 
-            // a click, not the end of a pan
             if (Math.abs(event.x() - pressX) < 4 && Math.abs(event.y() - pressY) < 4) {
                 int index = hoveredNode((int) event.x(), (int) event.y());
                 if (index >= 0) {
@@ -465,7 +464,6 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
         return super.mouseReleased(event);
     }
 
-    // closes the screen and outlines the router in the world for a few seconds
     private void locateNode(Node node) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null || minecraft.level == null) return;
@@ -507,7 +505,6 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
         if (scrollY != 0 && inChart(mouseX, mouseY)) {
             float newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * (scrollY > 0 ? 1.15F : 1 / 1.15F)));
 
-            // keep whatever is under the cursor under the cursor while zooming
             float localX = (float) mouseX - chartLeft();
             float localY = (float) mouseY - chartTop();
             panX = localX - (localX - panX) * (newZoom / zoom);

@@ -7,6 +7,7 @@ import com.benbenlaw.routers.block.entity.ExporterBlockEntity;
 import com.benbenlaw.routers.block.entity.ImporterExporterBlockEntity;
 import com.benbenlaw.routers.manager.ManagerScanner;
 import com.benbenlaw.routers.manager.ManagerSnapshot;
+import com.benbenlaw.routers.transfers.RoutersTransfers;
 import com.benbenlaw.routers.config.StartupConfig;
 import com.benbenlaw.routers.item.RoutersItems;
 import net.minecraft.core.BlockPos;
@@ -23,12 +24,19 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
 public class RoutersGameTests {
@@ -56,6 +64,9 @@ public class RoutersGameTests {
 
     public static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> DISTRIBUTOR_NEEDS_UPGRADE =
             TEST_FUNCTIONS.register("distributor_needs_upgrade", () -> RoutersGameTests::distributorWithoutUpgradeDistributesNothing);
+
+    public static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> ENERGY_TRANSFER =
+            TEST_FUNCTIONS.register("energy_transfer", () -> RoutersGameTests::energyMovesBetweenEnergyBlocks);
 
     public static void registerTests(RegisterGameTestsEvent event) {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(Routers.identifier("default"));
@@ -105,6 +116,9 @@ public class RoutersGameTests {
 
         event.registerTest(Routers.identifier("distributor_needs_upgrade"),
                 new FunctionGameTestInstance(DISTRIBUTOR_NEEDS_UPGRADE.getKey(), longTestData));
+
+        event.registerTest(Routers.identifier("energy_transfer"),
+                new FunctionGameTestInstance(ENERGY_TRANSFER.getKey(), longTestData));
 
         event.registerTest(Routers.identifier("router_manager_shared_inventory"),
                 new FunctionGameTestInstance(ROUTER_MANAGER_SHARED_INVENTORY.getKey(), testData));
@@ -256,7 +270,7 @@ public class RoutersGameTests {
                     helper.assertTrue(exporters == 1 && importers == 1 && hybrids == 1 && missing == 1,
                             "Wrong router kinds: " + exporters + "/" + importers + "/" + hybrids + "/" + missing);
 
-                    helper.assertTrue(snapshot.edges().stream().allMatch(e -> (e.types() & ManagerSnapshot.ITEM) != 0),
+                    helper.assertTrue(snapshot.edges().stream().allMatch(e -> (e.types() & RoutersTransfers.bit(Routers.identifier("item"))) != 0),
                             "Every link from the item exporter should be marked as carrying items");
                 })
                 .thenSucceed();
@@ -371,6 +385,50 @@ public class RoutersGameTests {
                 .thenIdle(150)
                 .thenExecute(() -> helper.assertTrue(!containerHas(helper, chestPos, Items.DIAMOND),
                         "A Distributor with no item upgrade should not have passed anything on"))
+                .thenSucceed();
+    }
+
+    // Vanilla chests have no energy, so while the energy test runs they're given a throwaway energy handler. It does nothing
+    // otherwise.
+    private static boolean energyTestActive;
+    private static final Map<BlockEntity, SimpleEnergyHandler> TEST_ENERGY = new WeakHashMap<>();
+
+    public static void registerTestCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, BlockEntityType.CHEST,
+                (chest, side) -> energyTestActive ? TEST_ENERGY.computeIfAbsent(chest, key -> new SimpleEnergyHandler(100000, 100000)) : null);
+    }
+
+    // Energy goes through the same generic transfer a new resource type would use. The sink only has room for 300 of the 800
+    // the exporter offers each time, so none of the rest may disappear from the source.
+    private static void energyMovesBetweenEnergyBlocks(GameTestHelper helper) {
+        energyTestActive = true;
+        helper.runBeforeTestEnd(() -> energyTestActive = false);
+
+        BlockPos exporterPos = new BlockPos(1, 1, 1);
+        BlockPos sourcePos = new BlockPos(1, 1, 2);
+        BlockPos importerPos = new BlockPos(5, 1, 1);
+        BlockPos sinkPos = new BlockPos(5, 1, 2);
+
+        helper.setBlock(exporterPos, RoutersBlocks.EXPORTER.get(), Direction.SOUTH);
+        helper.setBlock(sourcePos, Blocks.CHEST);
+        helper.setBlock(importerPos, RoutersBlocks.IMPORTER.get(), Direction.SOUTH);
+        helper.setBlock(sinkPos, Blocks.CHEST);
+
+        SimpleEnergyHandler source = new SimpleEnergyHandler(100000, 100000);
+        source.set(5000);
+        SimpleEnergyHandler sink = new SimpleEnergyHandler(300, 300);
+        TEST_ENERGY.put(helper.getBlockEntity(sourcePos, ChestBlockEntity.class), source);
+        TEST_ENERGY.put(helper.getBlockEntity(sinkPos, ChestBlockEntity.class), sink);
+
+        ExporterBlockEntity exporter = helper.getBlockEntity(exporterPos, ExporterBlockEntity.class);
+        exporter.getUpgradeItemHandler().set(0, ItemResource.of(RoutersItems.RF_UPGRADE_1.get()), 1);
+        exporter.toggleImporterPosition(GlobalPos.of(helper.getLevel().dimension(), helper.absolutePos(importerPos)));
+
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(sink.getAmountAsLong() == 300, "The sink should have been filled, but holds " + sink.getAmountAsLong()))
+                .thenIdle(100)
+                .thenExecute(() -> helper.assertTrue(source.getAmountAsLong() + sink.getAmountAsLong() == 5000,
+                        "No energy should be lost: source " + source.getAmountAsLong() + " + sink " + sink.getAmountAsLong()))
                 .thenSucceed();
     }
 }

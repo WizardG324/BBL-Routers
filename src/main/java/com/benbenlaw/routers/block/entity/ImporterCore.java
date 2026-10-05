@@ -6,9 +6,8 @@ import com.benbenlaw.core.block.entity.handler.item.FilterItemHandler;
 import com.benbenlaw.core.block.entity.handler.item.SyncableItemHandler;
 import com.benbenlaw.routers.api.ConfigurableRouterBlockEntity;
 import com.benbenlaw.routers.api.RouterButtonTypes;
-import com.benbenlaw.routers.api.transfers.EnergyTransfer;
-import com.benbenlaw.routers.api.transfers.FluidTransfer;
-import com.benbenlaw.routers.api.transfers.ItemTransfer;
+import com.benbenlaw.routers.api.TransferModule;
+import com.benbenlaw.routers.transfers.RoutersTransfers;
 import com.benbenlaw.routers.block.custom.RouterBlock;
 import com.benbenlaw.routers.config.StartupConfig;
 import com.benbenlaw.routers.item.RoutersItems;
@@ -28,16 +27,18 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -57,11 +58,11 @@ public class ImporterCore implements ConfigurableRouterBlockEntity {
 
     private final LinkedCapabilityCache<ResourceHandler<ItemResource>> itemSourceCache = new LinkedCapabilityCache<>(Capabilities.Item.BLOCK);
     private final LinkedCapabilityCache<ResourceHandler<FluidResource>> fluidSourceCache = new LinkedCapabilityCache<>(Capabilities.Fluid.BLOCK);
-    private final LinkedCapabilityCache<EnergyHandler> energySourceCache = new LinkedCapabilityCache<>(Capabilities.Energy.BLOCK);
+    private final Map<BlockCapability<?, Direction>, LinkedCapabilityCache<?>> otherSourceCaches = new HashMap<>();
 
     private final ResourceScanState itemScanState = new ResourceScanState();
     private final ResourceScanState fluidScanState = new ResourceScanState();
-    private final ResourceScanState energyScanState = new ResourceScanState();
+    private final Map<Identifier, ResourceScanState> otherScanStates = new HashMap<>();
 
     private final SyncableItemHandler upgradeItemHandler;
     private final FilterItemHandler filterItemHandler;
@@ -146,9 +147,9 @@ public class ImporterCore implements ConfigurableRouterBlockEntity {
 
     private void pullResources() {
         ServerLevel serverLevel = (ServerLevel) level();
-        lastExporterIndex = ItemTransfer.pullItems(serverLevel, this);
-        lastExporterIndex = FluidTransfer.pullFluids(serverLevel, this);
-        lastExporterIndex = EnergyTransfer.pullEnergy(serverLevel, this);
+        for (TransferModule<?> module : RoutersTransfers.TRANSFER_MODULES_REGISTRY) {
+            lastExporterIndex = module.pull(serverLevel, this);
+        }
     }
 
     public void validateExporterPositions() {
@@ -173,7 +174,7 @@ public class ImporterCore implements ConfigurableRouterBlockEntity {
             if (exporterLevel == null || !exporterLevel.isLoaded(pos.pos())) continue;
 
             if (exporterLevel.getBlockEntity(pos.pos()) instanceof ExporterBlockEntity exporter) {
-                for (ButtonType type : RouterButtonTypes.BUTTONS.values()) {
+                for (ButtonType type : RouterButtonTypes.all()) {
                     if (exporter.hasUpgrade(type)) {
                         unlocked.add(type.getId());
                     }
@@ -200,9 +201,7 @@ public class ImporterCore implements ConfigurableRouterBlockEntity {
         host.setChanged();
         notifyClient();
         recomputeLinkedUpgrades();
-        itemSourceCache.remove(exporterGlobalPos);
-        fluidSourceCache.remove(exporterGlobalPos);
-        energySourceCache.remove(exporterGlobalPos);
+        forgetSource(exporterGlobalPos);
         return true;
     }
 
@@ -213,9 +212,7 @@ public class ImporterCore implements ConfigurableRouterBlockEntity {
             host.setChanged();
             notifyClient();
             recomputeLinkedUpgrades();
-            itemSourceCache.remove(exporterGlobalPos);
-            fluidSourceCache.remove(exporterGlobalPos);
-            energySourceCache.remove(exporterGlobalPos);
+            forgetSource(exporterGlobalPos);
         }
         return removed;
     }
@@ -265,8 +262,15 @@ public class ImporterCore implements ConfigurableRouterBlockEntity {
         return fluidSourceCache;
     }
 
-    public LinkedCapabilityCache<EnergyHandler> getEnergySourceCache() {
-        return energySourceCache;
+    @SuppressWarnings("unchecked")
+    public <H> LinkedCapabilityCache<H> getSourceCache(BlockCapability<H, Direction> capability) {
+        return (LinkedCapabilityCache<H>) otherSourceCaches.computeIfAbsent(capability, key -> new LinkedCapabilityCache<>(capability));
+    }
+
+    private void forgetSource(GlobalPos pos) {
+        itemSourceCache.remove(pos);
+        fluidSourceCache.remove(pos);
+        for (LinkedCapabilityCache<?> cache : otherSourceCaches.values()) cache.remove(pos);
     }
 
     public ResourceScanState getItemScanState() {
@@ -277,8 +281,8 @@ public class ImporterCore implements ConfigurableRouterBlockEntity {
         return fluidScanState;
     }
 
-    public ResourceScanState getEnergyScanState() {
-        return energyScanState;
+    public ResourceScanState getScanState(Identifier key) {
+        return otherScanStates.computeIfAbsent(key, id -> new ResourceScanState());
     }
 
     @Override

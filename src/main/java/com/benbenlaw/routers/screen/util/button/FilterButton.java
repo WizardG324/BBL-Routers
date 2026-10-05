@@ -39,7 +39,7 @@ public class FilterButton extends Button {
     @Override
     protected void extractContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
         boolean hovered = this.isHovered();
-        Identifier currentTexture = hovered ? Routers.identifier(type.getTextureHover()) : Routers.identifier(type.getTexture());
+        Identifier currentTexture = hovered ? type.getTextureHover() : type.getTexture();
 
         guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, currentTexture, this.getX(), this.getY(), this.width, this.height);
     }

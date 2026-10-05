@@ -103,6 +103,9 @@ dependencies {
     runtimeOnly("curse.maven:titanium-287342:8671128")
     //Infinity Drives
     runtimeOnly("curse.maven:infinity-drives-1386843:8339790")
+    //BBL Rifts (optional, only the integration package touches it)
+    compileOnly("curse.maven:bbl-rifts-1721086:9029197")
+    runtimeOnly("curse.maven:bbl-rifts-1721086:9029197")
 }
 
 tasks.withType(ProcessResources).configureEach {

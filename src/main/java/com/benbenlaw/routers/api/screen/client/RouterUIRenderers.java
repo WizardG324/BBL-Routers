@@ -21,21 +21,34 @@ import java.util.Map;
 import java.util.Optional;
 
 public class RouterUIRenderers {
-    private static final Map<ButtonType, Renderer> RENDERERS = new HashMap<>();
+    private static final Map<Identifier, Renderer> RENDERERS = new HashMap<>();
+    private static final float[] DEFAULT_COLOR = ButtonType.hex("A0A0A0");
     private static final Identifier SLOTS_9 = Routers.identifier("inventory_slots_9");
 
     public interface Renderer {
-        void renderBackground(GuiGraphicsExtractor gui, FilterScreen screen);
-        void renderExtra(GuiGraphicsExtractor gui, FilterScreen screen, ConfigurableRouterBlockEntity entity, int mouseX, int mouseY);
+        default float[] color() {
+            return DEFAULT_COLOR;
+        }
+
+        default void renderBackground(GuiGraphicsExtractor gui, FilterScreen screen) {}
+
+        default void renderExtra(GuiGraphicsExtractor gui, FilterScreen screen, ConfigurableRouterBlockEntity entity, int mouseX, int mouseY) {}
     }
 
-    public static void register(ButtonType type, Renderer renderer) {
-        RENDERERS.put(type, renderer);
+    public static void register(Identifier resource, Renderer renderer) {
+        RENDERERS.put(resource, renderer);
+    }
+
+    public static float[] getColor(ButtonType type) {
+        Renderer renderer = RENDERERS.get(type.getId());
+        return renderer != null ? renderer.color() : DEFAULT_COLOR;
     }
 
     public static void init() {
         // Item Screen
-        register(RouterButtonTypes.ITEM_FILTER, new Renderer() {
+        register(RouterButtonTypes.ITEM, new Renderer() {
+            @Override public float[] color() { return ButtonType.hex("818181"); }
+
             @Override
             public void renderBackground(GuiGraphicsExtractor gui, FilterScreen screen) {
                 gui.blitSprite(RenderPipelines.GUI_TEXTURED, SLOTS_9, screen.getGuiLeft() + 7, screen.getGuiTop() + 35, 162, 18);
@@ -45,7 +58,9 @@ public class RouterUIRenderers {
         });
 
         // Fluid Screen
-        register(RouterButtonTypes.FLUID_FILTER, new Renderer() {
+        register(RouterButtonTypes.FLUID, new Renderer() {
+            @Override public float[] color() { return ButtonType.hex("0A61B8"); }
+
             @Override
             public void renderBackground(GuiGraphicsExtractor gui, FilterScreen screen) {
                 gui.blitSprite(RenderPipelines.GUI_TEXTURED, SLOTS_9, screen.getGuiLeft() + 7, screen.getGuiTop() + 35, 162, 18);
@@ -66,7 +81,9 @@ public class RouterUIRenderers {
         });
 
         // Energy Screen
-        register(RouterButtonTypes.ENERGY_FILTER, new Renderer() {
+        register(RouterButtonTypes.ENERGY, new Renderer() {
+            @Override public float[] color() { return ButtonType.hex("B70000"); }
+
             @Override public void renderBackground(GuiGraphicsExtractor gui, FilterScreen screen) {}
 
             @Override
@@ -85,6 +102,6 @@ public class RouterUIRenderers {
     }
 
     public static Optional<Renderer> get(ButtonType type) {
-        return Optional.ofNullable(RENDERERS.get(type));
+        return Optional.ofNullable(RENDERERS.get(type.getId()));
     }
 }

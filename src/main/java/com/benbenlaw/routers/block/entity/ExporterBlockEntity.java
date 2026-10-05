@@ -19,10 +19,11 @@ import com.benbenlaw.routers.util.ConnectedResources;
 import com.benbenlaw.routers.util.LinkedCapabilityCache;
 import com.benbenlaw.routers.util.ResourceScanState;
 import com.benbenlaw.routers.util.RoutersTags;
+import com.benbenlaw.routers.util.UpgradeUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.Registry;
+import net.minecraft.resources.Identifier;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
@@ -37,17 +38,19 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -122,13 +125,13 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
 
     private final LinkedCapabilityCache<ResourceHandler<ItemResource>> itemTargetCache = new LinkedCapabilityCache<>(Capabilities.Item.BLOCK);
     private final LinkedCapabilityCache<ResourceHandler<FluidResource>> fluidTargetCache = new LinkedCapabilityCache<>(Capabilities.Fluid.BLOCK);
-    private final LinkedCapabilityCache<EnergyHandler> energyTargetCache = new LinkedCapabilityCache<>(Capabilities.Energy.BLOCK);
+    private final Map<BlockCapability<?, Direction>, LinkedCapabilityCache<?>> otherTargetCaches = new HashMap<>();
 
     private final Set<GlobalPos> importerSelfPullSet = new HashSet<>();
 
     private final ResourceScanState itemScanState = new ResourceScanState();
     private final ResourceScanState fluidScanState = new ResourceScanState();
-    private final ResourceScanState energyScanState = new ResourceScanState();
+    private final Map<Identifier, ResourceScanState> otherScanStates = new HashMap<>();
 
     public ExporterBlockEntity(BlockPos pos, BlockState state) {
         this(RoutersBlockEntities.EXPORTER_BLOCK_ENTITY.get(), pos, state);
@@ -190,12 +193,7 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
     }
 
     public static List<TagKey<Item>> getUpgradeTypeTags() {
-        return List.of(
-                RoutersTags.Items.SPEED_UPGRADES,
-                RoutersTags.Items.ITEM_UPGRADES,
-                RoutersTags.Items.FLUID_UPGRADES,
-                RoutersTags.Items.RF_UPGRADES
-        );
+        return UpgradeUtil.getUpgradeTypeTags();
     }
 
     public void tick() {
@@ -233,11 +231,10 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
 
     public void moveResources() {
         assert level != null;
-        Registry<TransferModule> registry = level.registryAccess().lookupOrThrow(RoutersTransfers.TRANSFER_MODULE_KEY);
 
-        for (TransferModule module : registry) {
+        for (TransferModule<?> module : RoutersTransfers.TRANSFER_MODULES_REGISTRY) {
             if (hasCorrectUpgrade(module.upgradeTag())) {
-                this.lastImporterIndex = module.logic().apply((ServerLevel) level, this);
+                this.lastImporterIndex = module.push((ServerLevel) level, this);
             }
         }
     }
@@ -296,8 +293,15 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
         return fluidTargetCache;
     }
 
-    public LinkedCapabilityCache<EnergyHandler> getEnergyTargetCache() {
-        return energyTargetCache;
+    @SuppressWarnings("unchecked")
+    public <H> LinkedCapabilityCache<H> getTargetCache(BlockCapability<H, Direction> capability) {
+        return (LinkedCapabilityCache<H>) otherTargetCaches.computeIfAbsent(capability, key -> new LinkedCapabilityCache<>(capability));
+    }
+
+    private void forgetTarget(GlobalPos pos) {
+        itemTargetCache.remove(pos);
+        fluidTargetCache.remove(pos);
+        for (LinkedCapabilityCache<?> cache : otherTargetCaches.values()) cache.remove(pos);
     }
 
     public boolean importerPullsOwnResources(GlobalPos importerPos) {
@@ -320,8 +324,9 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
         return fluidScanState;
     }
 
-    public ResourceScanState getEnergyScanState() {
-        return energyScanState;
+    // Backoff state for any resource other than items and fluids, keyed by the resource's capability name.
+    public ResourceScanState getScanState(Identifier key) {
+        return otherScanStates.computeIfAbsent(key, id -> new ResourceScanState());
     }
 
     public InputItemHandler getUpgradeItemHandler() {
@@ -357,9 +362,7 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
             setChanged();
         }
 
-        itemTargetCache.remove(clickedPos);
-        fluidTargetCache.remove(clickedPos);
-        energyTargetCache.remove(clickedPos);
+        forgetTarget(clickedPos);
         importerSelfPullSet.remove(clickedPos);
 
         if (level != null && !level.isClientSide()) {
@@ -387,9 +390,7 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
                 pos.dimension().equals(importerGlobalPos.dimension()) && pos.pos().equals(importerGlobalPos.pos()));
         if (removed) {
             setChanged();
-            itemTargetCache.remove(importerGlobalPos);
-            fluidTargetCache.remove(importerGlobalPos);
-            energyTargetCache.remove(importerGlobalPos);
+            forgetTarget(importerGlobalPos);
             importerSelfPullSet.remove(importerGlobalPos);
             if (level != null && !level.isClientSide()) {
                 level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);

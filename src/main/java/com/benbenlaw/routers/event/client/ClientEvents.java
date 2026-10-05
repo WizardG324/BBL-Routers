@@ -68,6 +68,7 @@ public class ClientEvents {
         addShiftTooltip(stack, event, RoutersTags.Items.ITEM_UPGRADES, "tooltip.routers.item_upgrade", moreInfo);
         addShiftTooltip(stack, event, RoutersTags.Items.FLUID_UPGRADES, "tooltip.routers.fluid_upgrade", moreInfo);
         addShiftTooltip(stack, event, RoutersTags.Items.RF_UPGRADES, "tooltip.routers.energy_upgrade", moreInfo);
+        addShiftTooltip(stack, event, RoutersTags.Items.RIFT_ENERGY_UPGRADES, "tooltip.routers.rift_energy_upgrade", moreInfo);
         addShiftTooltip(stack, event, RoutersTags.Items.SPEED_UPGRADES, "tooltip.routers.speed_upgrade", moreInfo);
 
         addShiftTooltip(stack, event, RoutersItems.ROUND_ROBIN_UPGRADE.get(), "tooltip.routers.round_robin_upgrade");

@@ -42,6 +42,12 @@ public class RoutersLangProvider extends LanguageProvider {
         add("item.routers.speed_upgrade_3", "Speed Upgrade III");
         add("item.routers.speed_upgrade_4", "Speed Upgrade IV");
 
+        add("item.routers.rift_energy_upgrade_1", "Rift Energy Upgrade I");
+        add("item.routers.rift_energy_upgrade_2", "Rift Energy Upgrade II");
+        add("item.routers.rift_energy_upgrade_3", "Rift Energy Upgrade III");
+        add("item.routers.rift_energy_upgrade_4", "Rift Energy Upgrade IV");
+        add("item.routers.rift_energy_upgrade_5", "Rift Energy Upgrade V");
+
         add("item.routers.round_robin_upgrade", "Round Robin Upgrade");
         add("item.routers.dimensional_upgrade", "Dimensional Upgrade");
         add("item.routers.blacklist_upgrade", "Blacklist Upgrade");
@@ -141,6 +147,12 @@ public class RoutersLangProvider extends LanguageProvider {
         add("tooltip.routers.menu.fluid", "Fluid Filter");
         add("tooltip.routers.button.fluid", "Fluid Filter");
         add("tooltip.routers.button.fluid.locked", "No connected Exporter with a Fluid Upgrade yet - filter can still be set");
+
+        add("tooltip.routers.menu.rift_energy", "Rift Energy");
+        add("tooltip.routers.button.rift_energy", "Rift Energy");
+        add("tooltip.routers.button.rift_energy.locked", "No connected Exporter with a Rift Energy Upgrade yet - filter can still be set");
+        add("gui.routers.manager.legend.rift_energy", "Rift Energy");
+        add("tooltip.routers.rift_energy_upgrade", "Allows the Extraction of Rift Energy from an Exporter at %s Per Operation");
 
         add("tooltip.routers.menu.energy", "Energy");
         add("tooltip.routers.button.energy", "Energy");

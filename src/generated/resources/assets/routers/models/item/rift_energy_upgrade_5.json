@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "routers:item/rift_energy_upgrade_5"
+  }
+}

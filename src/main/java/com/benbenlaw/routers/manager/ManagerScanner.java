@@ -1,5 +1,6 @@
 package com.benbenlaw.routers.manager;
 
+import com.benbenlaw.routers.api.ConfigurableRouterBlockEntity;
 import com.benbenlaw.routers.api.NamedRouter;
 import com.benbenlaw.routers.api.RouterButtonTypes;
 import com.benbenlaw.routers.block.custom.RouterBlock;
@@ -12,6 +13,8 @@ import com.benbenlaw.routers.config.StartupConfig;
 import com.benbenlaw.routers.manager.ManagerSnapshot.Edge;
 import com.benbenlaw.routers.manager.ManagerSnapshot.Kind;
 import com.benbenlaw.routers.manager.ManagerSnapshot.Node;
+import com.benbenlaw.routers.screen.util.button.ButtonType;
+import com.benbenlaw.routers.transfers.RoutersTransfers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.MinecraftServer;
@@ -132,7 +135,7 @@ public class ManagerScanner {
             Integer from = indices.get(link.exporter);
             Integer to = indices.get(link.importer);
             if (from == null || to == null) continue;
-            edges.add(new Edge(from, to, nodeList.get(from).exporterFlags() & ManagerSnapshot.TYPE_MASK, false));
+            edges.add(new Edge(from, to, nodeList.get(from).exporterTypes(), false));
         }
 
         addSharedInventoryLinks(server, nodeList, edges);
@@ -160,7 +163,7 @@ public class ManagerScanner {
             for (int importer : entry.getValue()) {
                 for (int exporter : exportersByInventory.getOrDefault(entry.getKey(), List.of())) {
                     if (importer == exporter) continue;
-                    edges.add(new Edge(importer, exporter, nodes.get(exporter).exporterFlags() & ManagerSnapshot.TYPE_MASK, true));
+                    edges.add(new Edge(importer, exporter, nodes.get(exporter).exporterTypes(), true));
                 }
             }
         }
@@ -209,7 +212,7 @@ public class ManagerScanner {
 
     private static Node describe(GlobalPos pos, ServerLevel level, BlockEntity blockEntity) {
         if (level == null || blockEntity == null || !isRouter(blockEntity)) {
-            return new Node(pos, Kind.UNLOADED, ItemStack.EMPTY, 0, 0, true, "");
+            return new Node(pos, Kind.UNLOADED, ItemStack.EMPTY, 0, 0, 0, 0, true, "");
         }
 
         BlockState state = blockEntity.getBlockState();
@@ -225,15 +228,19 @@ public class ManagerScanner {
 
         boolean working = !state.hasProperty(RouterBlock.WORKING) || state.getValue(RouterBlock.WORKING);
 
+        int exporterTypes = 0;
         int exporterFlags = 0;
+        int importerTypes = 0;
         int importerFlags = 0;
         Kind kind;
 
         if (blockEntity instanceof DistributorBlockEntity distributor) {
+            exporterTypes = types(distributor);
             exporterFlags = exporterFlags(distributor);
             kind = Kind.DISTRIBUTOR;
             adjacent = ItemStack.EMPTY;
         } else if (blockEntity instanceof ExporterBlockEntity exporter) {
+            exporterTypes = types(exporter);
             exporterFlags = exporterFlags(exporter);
             kind = blockEntity instanceof ImporterExporterBlockEntity ? Kind.IMPORTER_EXPORTER : Kind.EXPORTER;
         } else {
@@ -241,19 +248,26 @@ public class ManagerScanner {
         }
 
         if (kind != Kind.DISTRIBUTOR && blockEntity instanceof ImporterHost importerHost) {
+            importerTypes = types(importerHost.getImporterCore());
             importerFlags = importerFlags(importerHost.getImporterCore());
         }
 
         String name = blockEntity instanceof NamedRouter named ? named.getRouterName() : "";
 
-        return new Node(pos, kind, adjacent, exporterFlags, importerFlags, working, name);
+        return new Node(pos, kind, adjacent, exporterTypes, exporterFlags, importerTypes, importerFlags, working, name);
+    }
+
+    // Which resources a router carries, one bit per registered resource.
+    private static int types(ConfigurableRouterBlockEntity router) {
+        int mask = 0;
+        for (ButtonType type : RouterButtonTypes.all()) {
+            if (router.hasUpgrade(type)) mask |= RoutersTransfers.bit(type.getId());
+        }
+        return mask;
     }
 
     private static int exporterFlags(ExporterBlockEntity exporter) {
         int flags = 0;
-        if (exporter.hasUpgrade(RouterButtonTypes.ITEM_FILTER)) flags |= ManagerSnapshot.ITEM;
-        if (exporter.hasUpgrade(RouterButtonTypes.FLUID_FILTER)) flags |= ManagerSnapshot.FLUID;
-        if (exporter.hasUpgrade(RouterButtonTypes.ENERGY_FILTER)) flags |= ManagerSnapshot.ENERGY;
         if (exporter.isRoundRobin) flags |= ManagerSnapshot.ROUND_ROBIN;
         if (exporter.canDoDimensionalTravel()) flags |= ManagerSnapshot.DIMENSIONAL;
         if (exporter.isBlacklist()) flags |= ManagerSnapshot.BLACKLIST;
@@ -266,9 +280,6 @@ public class ManagerScanner {
 
     private static int importerFlags(ImporterCore importer) {
         int flags = 0;
-        if (importer.hasUpgrade(RouterButtonTypes.ITEM_FILTER)) flags |= ManagerSnapshot.ITEM;
-        if (importer.hasUpgrade(RouterButtonTypes.FLUID_FILTER)) flags |= ManagerSnapshot.FLUID;
-        if (importer.hasUpgrade(RouterButtonTypes.ENERGY_FILTER)) flags |= ManagerSnapshot.ENERGY;
         if (importer.isRoundRobin) flags |= ManagerSnapshot.ROUND_ROBIN;
         if (importer.isBlacklist()) flags |= ManagerSnapshot.BLACKLIST;
         if (importer.isIgnoreNbt()) flags |= ManagerSnapshot.IGNORE_NBT;

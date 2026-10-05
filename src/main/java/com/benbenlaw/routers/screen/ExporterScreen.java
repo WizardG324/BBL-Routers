@@ -52,7 +52,7 @@ public class ExporterScreen extends AbstractContainerScreen<ExporterMenu> {
         int BUTTON_SPACING = 19;
         int BUTTON_Y = 30;
 
-        long upgradeCount = RouterButtonTypes.BUTTONS.values().stream()
+        long upgradeCount = RouterButtonTypes.all().stream()
                 .filter(type -> menu.blockEntity.hasUpgrade(type))
                 .count();
 
@@ -61,7 +61,7 @@ public class ExporterScreen extends AbstractContainerScreen<ExporterMenu> {
 
         int index = 0;
 
-        for (ButtonType type : RouterButtonTypes.BUTTONS.values()) {
+        for (ButtonType type : RouterButtonTypes.all()) {
             boolean hasUpgrade = menu.blockEntity.hasUpgrade(type);
 
             if (hasUpgrade) {

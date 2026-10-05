@@ -45,6 +45,12 @@ public class StartupConfig {
     public static final ModConfigSpec.ConfigValue<Integer> minBackoffTicks;
     public static final ModConfigSpec.ConfigValue<Integer> maxBackoffTicks;
 
+    public static final ModConfigSpec.ConfigValue<Integer> riftEnergyPerOperation1;
+    public static final ModConfigSpec.ConfigValue<Integer> riftEnergyPerOperation2;
+    public static final ModConfigSpec.ConfigValue<Integer> riftEnergyPerOperation3;
+    public static final ModConfigSpec.ConfigValue<Integer> riftEnergyPerOperation4;
+    public static final ModConfigSpec.ConfigValue<Integer> riftEnergyPerOperation5;
+
     public static final ModConfigSpec.ConfigValue<Integer> managerSeedRadius;
     public static final ModConfigSpec.ConfigValue<Integer> managerMaxRouters;
 
@@ -95,6 +101,26 @@ public class StartupConfig {
         RFPerTick5 = BUILDER
                 .comment("The maximum RF per tick that tier 5 can provide.")
                 .defineInRange("RF Per Operation 5", 250000000, 1, Integer.MAX_VALUE);
+
+        riftEnergyPerOperation1 = BUILDER
+                .comment("The most Rift energy per operation that tier 1 can move (needs BBL Rifts).")
+                .defineInRange("Rift Energy Per Operation 1", 800, 1, Integer.MAX_VALUE);
+
+        riftEnergyPerOperation2 = BUILDER
+                .comment("The most Rift energy per operation that tier 2 can move (needs BBL Rifts).")
+                .defineInRange("Rift Energy Per Operation 2", 32000, 1, Integer.MAX_VALUE);
+
+        riftEnergyPerOperation3 = BUILDER
+                .comment("The most Rift energy per operation that tier 3 can move (needs BBL Rifts).")
+                .defineInRange("Rift Energy Per Operation 3", 64000, 1, Integer.MAX_VALUE);
+
+        riftEnergyPerOperation4 = BUILDER
+                .comment("The most Rift energy per operation that tier 4 can move (needs BBL Rifts).")
+                .defineInRange("Rift Energy Per Operation 4", 128000, 1, Integer.MAX_VALUE);
+
+        riftEnergyPerOperation5 = BUILDER
+                .comment("The most Rift energy per operation that tier 5 can move (needs BBL Rifts).")
+                .defineInRange("Rift Energy Per Operation 5", 250000000, 1, Integer.MAX_VALUE);
 
         BUILDER.pop();
 

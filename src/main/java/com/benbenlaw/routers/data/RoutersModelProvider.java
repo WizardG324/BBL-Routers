@@ -3,6 +3,7 @@ package com.benbenlaw.routers.data;
 import com.benbenlaw.core.block.SyncableBlock;
 import com.benbenlaw.routers.Routers;
 import com.benbenlaw.routers.block.RoutersBlocks;
+import com.benbenlaw.routers.integration.rifts.RiftsIntegration;
 import com.benbenlaw.routers.item.RoutersItems;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
@@ -77,6 +78,10 @@ public class RoutersModelProvider extends ModelProvider {
         itemModels.generateFlatItem(RoutersItems.DIMENSIONAL_UPGRADE.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RoutersItems.BLACKLIST_UPGRADE.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RoutersItems.IGNORE_NBT_UPGRADE.get(), ModelTemplates.FLAT_ITEM);
+
+        for (var upgrade : RiftsIntegration.RIFT_ENERGY_UPGRADES) {
+            itemModels.generateFlatItem(upgrade.get(), ModelTemplates.FLAT_ITEM);
+        }
 
 
         createMachineBlock(RoutersBlocks.ROUTER_MANAGER.get(), blockModels.blockStateOutput, blockModels.modelOutput);

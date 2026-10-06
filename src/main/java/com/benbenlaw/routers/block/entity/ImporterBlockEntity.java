@@ -5,6 +5,7 @@ import com.benbenlaw.core.block.entity.handler.fluid.FilterFluidHandler;
 import com.benbenlaw.core.block.entity.handler.item.FilterItemHandler;
 import com.benbenlaw.core.block.entity.handler.item.SyncableItemHandler;
 import com.benbenlaw.routers.api.ConfigurableRouterBlockEntity;
+import com.benbenlaw.routers.api.NamedRouter;
 import com.benbenlaw.routers.block.RoutersBlockEntities;
 import com.benbenlaw.routers.screen.ImporterMenu;
 import com.benbenlaw.routers.screen.util.button.ButtonType;
@@ -22,7 +23,20 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
-public class ImporterBlockEntity extends SyncableBlockEntity implements MenuProvider, ConfigurableRouterBlockEntity, ImporterHost {
+public class ImporterBlockEntity extends SyncableBlockEntity implements MenuProvider, ConfigurableRouterBlockEntity, ImporterHost, NamedRouter {
+    private String routerName = "";
+
+    @Override
+    public String getRouterName() {
+        return routerName;
+    }
+
+    @Override
+    public void setRouterName(String name) {
+        this.routerName = name;
+        setChanged();
+    }
+
 
     public final ContainerData data;
     private final ImporterCore core = new ImporterCore(this);
@@ -93,12 +107,14 @@ public class ImporterBlockEntity extends SyncableBlockEntity implements MenuProv
     @Override
     protected void saveAdditional(@NotNull ValueOutput output) {
         core.save(output);
+        if (!routerName.isEmpty()) output.putString("routerName", routerName);
         super.saveAdditional(output);
     }
 
     @Override
     protected void loadAdditional(@NotNull ValueInput input) {
         core.load(input);
+        routerName = input.getStringOr("routerName", "");
         super.loadAdditional(input);
     }
 

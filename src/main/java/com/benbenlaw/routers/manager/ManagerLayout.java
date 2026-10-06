@@ -12,7 +12,7 @@ public class ManagerLayout {
 
     public static final int NODE_WIDTH = 118;
     public static final int NODE_HEIGHT = 28;
-    public static final int GAP_X = 44;
+    public static final int GAP_X = 64;
     public static final int GAP_Y = 14;
 
     public final int[] x;

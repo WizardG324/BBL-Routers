@@ -5,6 +5,7 @@ import com.benbenlaw.core.block.entity.handler.fluid.FilterFluidHandler;
 import com.benbenlaw.core.block.entity.handler.item.FilterItemHandler;
 import com.benbenlaw.core.block.entity.handler.item.InputItemHandler;
 import com.benbenlaw.routers.api.ConfigurableRouterBlockEntity;
+import com.benbenlaw.routers.api.NamedRouter;
 import com.benbenlaw.routers.api.TransferModule;
 import com.benbenlaw.routers.block.RoutersBlockEntities;
 import com.benbenlaw.routers.block.custom.RouterBlock;
@@ -53,7 +54,20 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProvider, ConfigurableRouterBlockEntity {
+public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProvider, ConfigurableRouterBlockEntity, NamedRouter {
+    private String routerName = "";
+
+    @Override
+    public String getRouterName() {
+        return routerName;
+    }
+
+    @Override
+    public void setRouterName(String name) {
+        this.routerName = name;
+        setChanged();
+    }
+
 
     public List<GlobalPos> importerPositions;
     public final ContainerData data;
@@ -428,6 +442,7 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
         output.putBoolean("canDoDimensionalTravel", canDoDimensionalTravel);
         output.putBoolean("ignoreNbt", ignoreNbt);
         output.putBoolean("isBlacklist", isBlacklist);
+        if (!routerName.isEmpty()) output.putString("routerName", routerName);
 
         if (importerPositions != null && !importerPositions.isEmpty()) {
             var list = output.list("importerPositions", GlobalPos.CODEC);
@@ -450,6 +465,7 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
         canDoDimensionalTravel = input.getBooleanOr("canDoDimensionalTravel", false);
         ignoreNbt = input.getBooleanOr("ignoreNbt", false);
         isBlacklist = input.getBooleanOr("isBlacklist", false);
+        routerName = input.getStringOr("routerName", "");
 
         importerPositions = new ArrayList<>();
 

@@ -6,6 +6,10 @@ import com.benbenlaw.routers.block.entity.DistributorBlockEntity;
 import com.benbenlaw.routers.block.entity.ExporterBlockEntity;
 import com.benbenlaw.routers.block.entity.ImporterExporterBlockEntity;
 import com.benbenlaw.routers.manager.ManagerScanner;
+import io.netty.buffer.Unpooled;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import com.benbenlaw.routers.networking.packets.RenameRouterFromManager;
+import com.benbenlaw.routers.networking.packets.EditLinkFromManager;
 import com.benbenlaw.routers.manager.ManagerSnapshot;
 import com.benbenlaw.routers.transfers.RoutersTransfers;
 import com.benbenlaw.routers.config.StartupConfig;
@@ -68,6 +72,15 @@ public class RoutersGameTests {
     public static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> ENERGY_TRANSFER =
             TEST_FUNCTIONS.register("energy_transfer", () -> RoutersGameTests::energyMovesBetweenEnergyBlocks);
 
+    public static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> MANAGER_EDIT_LINKS =
+            TEST_FUNCTIONS.register("manager_edit_links", () -> RoutersGameTests::managerLinksAndUnlinksRouters);
+
+    public static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> MANAGER_RENAME =
+            TEST_FUNCTIONS.register("manager_rename", () -> RoutersGameTests::managerRenamesAndClampsNames);
+
+    public static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> MANAGER_SCAN_CACHE =
+            TEST_FUNCTIONS.register("manager_scan_cache", () -> RoutersGameTests::managerReusesRecentScans);
+
     public static void registerTests(RegisterGameTestsEvent event) {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(Routers.identifier("default"));
 
@@ -119,6 +132,15 @@ public class RoutersGameTests {
 
         event.registerTest(Routers.identifier("energy_transfer"),
                 new FunctionGameTestInstance(ENERGY_TRANSFER.getKey(), longTestData));
+
+        event.registerTest(Routers.identifier("manager_edit_links"),
+                new FunctionGameTestInstance(MANAGER_EDIT_LINKS.getKey(), testData));
+
+        event.registerTest(Routers.identifier("manager_rename"),
+                new FunctionGameTestInstance(MANAGER_RENAME.getKey(), testData));
+
+        event.registerTest(Routers.identifier("manager_scan_cache"),
+                new FunctionGameTestInstance(MANAGER_SCAN_CACHE.getKey(), testData));
 
         event.registerTest(Routers.identifier("router_manager_shared_inventory"),
                 new FunctionGameTestInstance(ROUTER_MANAGER_SHARED_INVENTORY.getKey(), testData));
@@ -429,6 +451,118 @@ public class RoutersGameTests {
                 .thenIdle(100)
                 .thenExecute(() -> helper.assertTrue(source.getAmountAsLong() + sink.getAmountAsLong() == 5000,
                         "No energy should be lost: source " + source.getAmountAsLong() + " + sink " + sink.getAmountAsLong()))
+                .thenSucceed();
+    }
+
+    // What the Router Manager's link packets do, minus the player: link, unlink, and the pairs it must refuse.
+    private static void managerLinksAndUnlinksRouters(GameTestHelper helper) {
+        BlockPos managerPos = new BlockPos(1, 1, 5);
+        BlockPos exporterPos = new BlockPos(1, 1, 1);
+        BlockPos importerPos = new BlockPos(5, 1, 1);
+        BlockPos distributorPos = new BlockPos(9, 1, 1);
+
+        helper.setBlock(managerPos, RoutersBlocks.ROUTER_MANAGER.get());
+        helper.setBlock(exporterPos, RoutersBlocks.EXPORTER.get(), Direction.SOUTH);
+        helper.setBlock(importerPos, RoutersBlocks.IMPORTER.get(), Direction.SOUTH);
+        helper.setBlock(distributorPos, RoutersBlocks.DISTRIBUTOR.get(), Direction.SOUTH);
+
+        var level = helper.getLevel();
+        BlockPos manager = helper.absolutePos(managerPos);
+        GlobalPos exporter = GlobalPos.of(level.dimension(), helper.absolutePos(exporterPos));
+        GlobalPos importer = GlobalPos.of(level.dimension(), helper.absolutePos(importerPos));
+        GlobalPos distributor = GlobalPos.of(level.dimension(), helper.absolutePos(distributorPos));
+
+        ExporterBlockEntity exporterEntity = helper.getBlockEntity(exporterPos, ExporterBlockEntity.class);
+
+        helper.startSequence()
+                .thenExecute(() -> {
+                    helper.assertTrue(EditLinkFromManager.apply(level, manager, exporter, importer, true), "Linking an exporter to an importer should work");
+                    helper.assertTrue(exporterEntity.importerPositions.contains(importer), "The exporter should now list the importer");
+                    helper.assertTrue(ImporterCoreAt(level, importer).exporterPositions.contains(exporter), "The importer should list the exporter back");
+
+                    helper.assertTrue(EditLinkFromManager.apply(level, manager, exporter, distributor, true), "Linking to a distributor should work");
+                    helper.assertTrue(exporterEntity.importerPositions.size() == 2, "Both links should be there");
+
+                    helper.assertTrue(EditLinkFromManager.apply(level, manager, exporter, importer, false), "Unlinking should work");
+                    helper.assertTrue(!exporterEntity.importerPositions.contains(importer), "The importer should be gone from the exporter");
+                    helper.assertTrue(!ImporterCoreAt(level, importer).exporterPositions.contains(exporter), "The exporter should be gone from the importer");
+                    helper.assertTrue(exporterEntity.importerPositions.contains(distributor), "The distributor link should be untouched");
+
+                    helper.assertTrue(!EditLinkFromManager.apply(level, manager, exporter, exporter, true), "A router can't be linked to itself");
+                    helper.assertTrue(!EditLinkFromManager.apply(level, manager, importer, exporter, true), "An importer can't be the exporting end");
+                    helper.assertTrue(!EditLinkFromManager.apply(level, manager, distributor, importer, true), "A distributor can't be the exporting end");
+                })
+                .thenSucceed();
+    }
+
+    private static com.benbenlaw.routers.block.entity.ImporterCore ImporterCoreAt(net.minecraft.server.level.ServerLevel level, GlobalPos pos) {
+        return com.benbenlaw.routers.block.entity.ImporterCore.at(level, pos.pos());
+    }
+
+    // Names are cleaned, cut to length, and only accepted for routers in the manager's network. A too-long name that got
+    // stored some other way must not stop the chart being sent.
+    private static void managerRenamesAndClampsNames(GameTestHelper helper) {
+        // far enough that the manager's starting radius never reaches it, and nothing links it in
+        BlockPos managerPos = new BlockPos(1, 1, 1);
+        BlockPos nearPos = new BlockPos(1, 1, 3);
+        BlockPos farPos = new BlockPos(1 + StartupConfig.managerSeedRadius.get() + 10, 1, 1);
+
+        helper.setBlock(managerPos, RoutersBlocks.ROUTER_MANAGER.get());
+        helper.setBlock(nearPos, RoutersBlocks.IMPORTER.get(), Direction.SOUTH);
+        helper.setBlock(farPos, RoutersBlocks.IMPORTER.get(), Direction.SOUTH);
+
+        var level = helper.getLevel();
+        BlockPos manager = helper.absolutePos(managerPos);
+        BlockPos near = helper.absolutePos(nearPos);
+        BlockPos far = helper.absolutePos(farPos);
+
+        helper.startSequence()
+                .thenExecute(() -> {
+                    helper.assertTrue(RenameRouterFromManager.apply(level, manager, near, "  Smelter  "), "Renaming a charted router should work");
+                    helper.assertTrue(helper.getBlockEntity(nearPos, com.benbenlaw.routers.block.entity.ImporterBlockEntity.class).getRouterName().equals("Smelter"),
+                            "The name should be trimmed");
+
+                    helper.assertTrue(!RenameRouterFromManager.apply(level, manager, far, "Nope"), "A router outside the network must not be renamed");
+                    helper.assertTrue(helper.getBlockEntity(farPos, com.benbenlaw.routers.block.entity.ImporterBlockEntity.class).getRouterName().isEmpty(),
+                            "The far router should still be unnamed");
+
+                    var near1 = helper.getBlockEntity(nearPos, com.benbenlaw.routers.block.entity.ImporterBlockEntity.class);
+                    near1.setRouterName("x".repeat(100));
+                    helper.assertTrue(near1.getRouterName().length() == com.benbenlaw.routers.api.NamedRouter.MAX_NAME_LENGTH, "Names are cut to the maximum length");
+
+                    // the chart still encodes, and the name survives the trip
+                    ManagerSnapshot snapshot = ManagerScanner.scanFresh(level, manager);
+                    RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), level.registryAccess());
+                    ManagerSnapshot.STREAM_CODEC.encode(buf, snapshot);
+                    ManagerSnapshot decoded = ManagerSnapshot.STREAM_CODEC.decode(buf);
+                    helper.assertTrue(decoded.nodes().stream().anyMatch(node -> node.name().length() == com.benbenlaw.routers.api.NamedRouter.MAX_NAME_LENGTH),
+                            "The renamed router should come through the packet with its name");
+                })
+                .thenSucceed();
+    }
+
+    // Reads of the network reuse a recent scan; a fresh scan after a change replaces it.
+    private static void managerReusesRecentScans(GameTestHelper helper) {
+        BlockPos managerPos = new BlockPos(1, 1, 1);
+        BlockPos routerPos = new BlockPos(3, 1, 1);
+
+        helper.setBlock(managerPos, RoutersBlocks.ROUTER_MANAGER.get());
+        helper.setBlock(routerPos, RoutersBlocks.IMPORTER.get(), Direction.SOUTH);
+
+        var level = helper.getLevel();
+        BlockPos manager = helper.absolutePos(managerPos);
+
+        helper.startSequence()
+                .thenExecute(() -> {
+                    ManagerSnapshot first = ManagerScanner.scanCached(level, manager);
+                    helper.assertTrue(ManagerScanner.scanCached(level, manager) == first, "A second read straight away should reuse the first scan");
+
+                    RenameRouterFromManager.apply(level, manager, helper.absolutePos(routerPos), "Fresh");
+                    ManagerSnapshot fresh = ManagerScanner.scanFresh(level, manager);
+                    helper.assertTrue(fresh != first, "A fresh scan should replace the cached one");
+                    helper.assertTrue(fresh.nodes().stream().anyMatch(node -> node.name().equals("Fresh")), "The fresh scan should show the new name");
+                    helper.assertTrue(ManagerScanner.scanCached(level, manager) == fresh, "Reads after that should reuse the fresh scan");
+                })
                 .thenSucceed();
     }
 }

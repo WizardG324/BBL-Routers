@@ -42,6 +42,10 @@ public class ImporterMenu extends SimpleAbstractContainerMenu {
         this.addDataSlots(data);
     }
 
+    public BlockPos getBlockPos() {
+        return blockPos;
+    }
+
     @Override
     public boolean stillValid(Player player) {
         return ManagerSessions.allowsRemote(player, blockPos) || super.stillValid(player);

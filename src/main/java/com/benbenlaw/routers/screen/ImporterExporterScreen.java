@@ -1,5 +1,8 @@
 package com.benbenlaw.routers.screen;
 
+import com.benbenlaw.routers.screen.util.RouterNaming;
+import com.benbenlaw.routers.screen.util.button.RenameButton;
+import net.minecraft.client.input.KeyEvent;
 import com.benbenlaw.routers.Routers;
 import com.benbenlaw.routers.api.ConfigurableRouterBlockEntity;
 import com.benbenlaw.routers.api.RouterButtonTypes;
@@ -37,6 +40,8 @@ public class ImporterExporterScreen extends AbstractContainerScreen<ImporterExpo
                 : "gui.routers.importer_exporter.title.exporter"));
     }
 
+    private final RouterNaming naming = new RouterNaming(menu.getBlockEntity().getBlockPos(), this::addRenderableWidget, this::removeWidget, this::setFocused);
+
     @Override
     protected void init() {
         super.init();
@@ -49,6 +54,9 @@ public class ImporterExporterScreen extends AbstractContainerScreen<ImporterExpo
 
         addRenderableWidget(new SideToggleButton(guiLeft() + 151, guiTop() + 4, menu.importerSide,
                 button -> ClientPacketDistributor.sendToServer(new ToggleHybridSide(menu.getBlockEntity().getBlockPos()))));
+
+        naming.reset();
+        addRenderableWidget(new RenameButton(leftPos + 139, topPos + 6, () -> naming.begin(leftPos + 8, topPos + 14, menu.getBlockEntity().getRouterName())));
 
         updateButtons();
     }
@@ -149,7 +157,19 @@ public class ImporterExporterScreen extends AbstractContainerScreen<ImporterExpo
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
         MousePositionManagerUtil.getLastKnownPosition();
+        naming.mouseClicked(event);
         return super.mouseClicked(event, isDoubleClick);
+    }
+
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        return naming.keyPressed(event) || super.keyPressed(event);
+    }
+
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
+        RouterNaming.drawLabels(guiGraphics, font, RouterNaming.title(title, menu.getBlockEntity(), 127),
+                titleLabelX, titleLabelY, playerInventoryTitle, inventoryLabelX, inventoryLabelY);
     }
 
     @Override

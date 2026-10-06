@@ -20,6 +20,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.ArrayList;
@@ -44,6 +45,21 @@ public class ManagerSessions {
     private static final Map<UUID, Session> SESSIONS = new ConcurrentHashMap<>();
     private static final Set<UUID> SWITCHING = ConcurrentHashMap.newKeySet();
     private static final List<Reopen> PENDING_REOPEN = new ArrayList<>();
+
+    private static final Map<UUID, Map<String, Integer>> LAST_ACTION = new ConcurrentHashMap<>();
+
+    // The manager's packets can each cost a scan or a screen's worth of data, so a player can only send each kind so often.
+    // Plenty fast for anyone using the screen by hand.
+    public static boolean allow(ServerPlayer player, String action, int cooldownTicks) {
+        int now = player.level().getServer().getTickCount();
+        Map<String, Integer> actions = LAST_ACTION.computeIfAbsent(player.getUUID(), id -> new ConcurrentHashMap<>());
+
+        Integer last = actions.get(action);
+        if (last != null && now >= last && now - last < cooldownTicks) return false;
+
+        actions.put(action, now);
+        return true;
+    }
 
     public static void begin(ServerPlayer player, BlockPos manager, BlockPos target) {
         SESSIONS.put(player.getUUID(), new Session(manager, target));
@@ -126,5 +142,15 @@ public class ManagerSessions {
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         SESSIONS.remove(event.getEntity().getUUID());
         SWITCHING.remove(event.getEntity().getUUID());
+        LAST_ACTION.remove(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
+    public static void onServerStopped(ServerStoppedEvent event) {
+        SESSIONS.clear();
+        SWITCHING.clear();
+        LAST_ACTION.clear();
+        PENDING_REOPEN.clear();
+        ManagerScanner.clearCache();
     }
 }

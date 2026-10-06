@@ -119,7 +119,7 @@ public class RoutersLangProvider extends LanguageProvider {
         add("gui.routers.manager.sends_to", "Sends to: %s");
         add("gui.routers.manager.fed_by", "Fed by: %s");
         add("gui.routers.manager.pick_a_link", "That Router has several links, Ctrl + right click the link itself to remove it");
-        add("gui.routers.manager.rename_hint", "Router name, Enter to save");
+        add("gui.routers.manager.rename_hint", "Router name");
         add("gui.routers.manager.issue.no_importer", "Not linked to any Importer");
         add("gui.routers.manager.issue.no_exporter", "Not linked to any Exporter");
         add("gui.routers.manager.issue.no_links", "Not linked to anything");
@@ -159,6 +159,8 @@ public class RoutersLangProvider extends LanguageProvider {
         add("tooltip.routers.button.energy.locked", "No connected Exporter with an Energy Upgrade yet - filter can still be set");
 
         add("tooltip.routers.button.back", "Back");
+        add("tooltip.routers.rename", "Rename");
+        add("gui.routers.rename_hint", "Router name, Enter to save");
 
         add("tooltip.routers.empty_item_filter_slot", "Empty Item Filter Slot");
         add("tooltip.routers.empty_fluid_filter_slot", "Empty Fluid Filter Slot");

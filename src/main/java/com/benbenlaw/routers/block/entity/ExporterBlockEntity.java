@@ -64,8 +64,9 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
 
     @Override
     public void setRouterName(String name) {
-        this.routerName = name;
+        this.routerName = NamedRouter.clean(name);
         setChanged();
+        sync();
     }
 
 
@@ -465,7 +466,7 @@ public class ExporterBlockEntity extends SyncableBlockEntity implements MenuProv
         canDoDimensionalTravel = input.getBooleanOr("canDoDimensionalTravel", false);
         ignoreNbt = input.getBooleanOr("ignoreNbt", false);
         isBlacklist = input.getBooleanOr("isBlacklist", false);
-        routerName = input.getStringOr("routerName", "");
+        routerName = NamedRouter.clean(input.getStringOr("routerName", ""));
 
         importerPositions = new ArrayList<>();
 

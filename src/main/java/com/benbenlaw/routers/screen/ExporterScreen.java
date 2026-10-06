@@ -1,5 +1,8 @@
 package com.benbenlaw.routers.screen;
 
+import com.benbenlaw.routers.screen.util.RouterNaming;
+import com.benbenlaw.routers.screen.util.button.RenameButton;
+import net.minecraft.client.input.KeyEvent;
 import com.benbenlaw.core.screen.util.FluidRenderingUtils;
 import com.benbenlaw.routers.Routers;
 import com.benbenlaw.routers.api.RouterButtonTypes;
@@ -31,6 +34,8 @@ public class ExporterScreen extends AbstractContainerScreen<ExporterMenu> {
         super(menu, inventory, component);
     }
 
+    private final RouterNaming naming = new RouterNaming(menu.blockEntity.getBlockPos(), this::addRenderableWidget, this::removeWidget, this::setFocused);
+
     @Override
     protected void init() {
         super.init();
@@ -40,6 +45,9 @@ public class ExporterScreen extends AbstractContainerScreen<ExporterMenu> {
         if (MousePositionManagerUtil.lastMouseX != -1) {
             MousePositionManagerUtil.setLastKnownPosition();
         }
+
+        naming.reset();
+        addRenderableWidget(new RenameButton(leftPos + 160, topPos + 6, () -> naming.begin(leftPos + 8, topPos + 14, menu.blockEntity.getRouterName())));
 
         updateButtons();
     }
@@ -137,7 +145,19 @@ public class ExporterScreen extends AbstractContainerScreen<ExporterMenu> {
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
         MousePositionManagerUtil.getLastKnownPosition();
+        naming.mouseClicked(event);
         return super.mouseClicked(event, isDoubleClick);
+    }
+
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        return naming.keyPressed(event) || super.keyPressed(event);
+    }
+
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
+        RouterNaming.drawLabels(guiGraphics, font, RouterNaming.title(title, menu.blockEntity, 148),
+                titleLabelX, titleLabelY, playerInventoryTitle, inventoryLabelX, inventoryLabelY);
     }
 
     @Override

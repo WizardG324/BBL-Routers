@@ -33,8 +33,9 @@ public class ImporterBlockEntity extends SyncableBlockEntity implements MenuProv
 
     @Override
     public void setRouterName(String name) {
-        this.routerName = name;
+        this.routerName = NamedRouter.clean(name);
         setChanged();
+        sync();
     }
 
 
@@ -114,7 +115,7 @@ public class ImporterBlockEntity extends SyncableBlockEntity implements MenuProv
     @Override
     protected void loadAdditional(@NotNull ValueInput input) {
         core.load(input);
-        routerName = input.getStringOr("routerName", "");
+        routerName = NamedRouter.clean(input.getStringOr("routerName", ""));
         super.loadAdditional(input);
     }
 

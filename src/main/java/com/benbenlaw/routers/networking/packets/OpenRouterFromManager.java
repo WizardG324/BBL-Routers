@@ -25,6 +25,7 @@ public record OpenRouterFromManager(BlockPos managerPos, BlockPos targetPos) imp
             if (!(player.containerMenu instanceof RouterManagerMenu menu)) return;
             if (!menu.getBlockPos().equals(packet.managerPos)) return;
             if (!(player.level() instanceof ServerLevel level)) return;
+            if (!ManagerSessions.allow(player, "action", 4)) return;
             // only routers that are actually part of the charted network can be opened this way
             if (!ManagerScanner.isCharted(level, packet.managerPos, packet.targetPos)) return;
 

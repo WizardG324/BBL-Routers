@@ -63,26 +63,19 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
     private ManagerLayout layout;
     private List<GlobalPos> layoutNodes = List.of();
     private List<Edge> layoutEdges = List.of();
-    // per node, what looks wrong with it; rebuilt with every snapshot
     private List<List<Component>> issues = List.of();
 
-    // the rename box opened with a middle click, and the router it names
     private EditBox nameBox;
     private GlobalPos renaming;
 
-    // where each edge leaves its source and meets its target: slot i of n down that router's side
     private int[] outSlot = new int[0];
     private int[] outCount = new int[0];
     private int[] inSlot = new int[0];
     private int[] inCount = new int[0];
-    // x of each link's vertical run, its own lane across the gap after its exporter's column
     private int[] laneX = new int[0];
-
     private int linkFrom = -1;
-    // Ctrl as seen through this screen's key events, alongside polling the keyboard
+
     private boolean ctrlHeld;
-    // Tab held hides tooltips, for seeing the links underneath them
-    private boolean tabHeld;
     private double linkX;
     private double linkY;
 
@@ -154,9 +147,13 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
             linksOut[edge.from()] = true;
             linksIn[edge.to()] = true;
 
+            // a link to a router that isn't loaded or has gone is flagged at both ends
             if (from.kind() == Kind.UNLOADED) addIssue(found, edge.to(), "gui.routers.manager.issue.unloaded_link");
+            if (to.kind() == Kind.UNLOADED) addIssue(found, edge.from(), "gui.routers.manager.issue.unloaded_link");
 
-            if (!from.pos().dimension().equals(to.pos().dimension()) && (from.exporterFlags() & ManagerSnapshot.DIMENSIONAL) == 0) {
+            // an unloaded exporter's upgrades aren't known, so it can't be said to be missing the Dimensional one
+            if (from.kind() != Kind.UNLOADED && !from.pos().dimension().equals(to.pos().dimension())
+                    && (from.exporterFlags() & ManagerSnapshot.DIMENSIONAL) == 0) {
                 addIssue(found, edge.from(), "gui.routers.manager.issue.needs_dimensional");
             }
         }
@@ -382,7 +379,8 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
 
         // a player-given name replaces the coordinates; those stay in the tooltip
         String title = node.name().isEmpty() ? node.pos().pos().toShortString() : node.name();
-        guiGraphics.text(font, font.plainSubstrByWidth(title, w - 50), nx + 46, ny + 5, 0xFFFFFFFF, false);
+        // leave room for the warning triangle in the corner
+        guiGraphics.text(font, font.plainSubstrByWidth(title, w - 50 - (hasIssue ? 12 : 0)), nx + 46, ny + 5, 0xFFFFFFFF, false);
 
         if (hasIssue) {
             drawWarningTriangle(guiGraphics, nx + w - 10, ny + 2);
@@ -846,7 +844,6 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
         if (isCtrl(event.key())) ctrlHeld = true;
         if (nameBox == null) {
             if (event.key() == GLFW.GLFW_KEY_TAB) {
-                tabHeld = true;
                 return true; // taken for hiding tooltips rather than moving widget focus
             }
             return super.keyPressed(event);
@@ -902,7 +899,6 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
     @Override
     public boolean keyReleased(KeyEvent event) {
         if (isCtrl(event.key())) ctrlHeld = false;
-        if (event.key() == GLFW.GLFW_KEY_TAB) tabHeld = false;
         return super.keyReleased(event);
     }
 
@@ -911,7 +907,8 @@ public class RouterManagerScreen extends AbstractContainerScreen<RouterManagerMe
     }
 
     private boolean tabDown() {
-        return tabHeld || InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_TAB);
+        // read from the keyboard each time, so a key release the screen never saw can't leave tooltips hidden
+        return InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_TAB);
     }
 
     private boolean ctrlDown() {

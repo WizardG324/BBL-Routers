@@ -12,8 +12,6 @@ public interface ConfigurableRouterBlockEntity {
     FilterFluidHandler getFilterFluidHandler();
     boolean hasUpgrade(ButtonType type);
 
-    // The Importer Exporter has two independent configurations on one block; this picks the one
-    // the player is currently editing. Every other block just is its own configuration.
     @Nullable
     static ConfigurableRouterBlockEntity resolve(@Nullable BlockEntity blockEntity) {
         if (blockEntity instanceof ImporterExporterBlockEntity hybrid) return hybrid.getActiveConfigurable();

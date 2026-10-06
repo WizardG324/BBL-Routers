@@ -3,6 +3,7 @@ package com.benbenlaw.routers.networking.packets;
 import com.benbenlaw.routers.Routers;
 import com.benbenlaw.routers.api.NamedRouter;
 import com.benbenlaw.routers.manager.ManagerScanner;
+import com.benbenlaw.routers.manager.ManagerSessions;
 import com.benbenlaw.routers.screen.RouterManagerMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -27,16 +28,23 @@ public record RenameRouterFromManager(BlockPos managerPos, BlockPos targetPos, S
             if (!(player.containerMenu instanceof RouterManagerMenu menu)) return;
             if (!menu.getBlockPos().equals(packet.managerPos)) return;
             if (!(player.level() instanceof ServerLevel level)) return;
-            if (!ManagerScanner.isCharted(level, packet.managerPos, packet.targetPos)) return;
-            if (!(level.getBlockEntity(packet.targetPos) instanceof NamedRouter router)) return;
-
-            // same cleanup an anvil does, so section signs and control characters can't sneak in
-            router.setRouterName(StringUtil.filterText(packet.name).strip());
+            if (!ManagerSessions.allow(player, "action", 4)) return;
+            if (!apply(level, packet.managerPos, packet.targetPos, packet.name)) return;
 
             // send the renamed chart straight back instead of waiting for the next refresh
-            PacketDistributor.sendToPlayer(player, ManagerScanner.scan(level, packet.managerPos));
+            PacketDistributor.sendToPlayer(player, ManagerScanner.scanFresh(level, packet.managerPos));
         });
     };
+
+    // False if the router isn't part of the manager's network or can't be named.
+    public static boolean apply(ServerLevel level, BlockPos managerPos, BlockPos targetPos, String name) {
+        if (!ManagerScanner.isCharted(level, managerPos, targetPos)) return false;
+        if (!(level.getBlockEntity(targetPos) instanceof NamedRouter router)) return false;
+
+        // same cleanup an anvil does, so section signs and control characters can't sneak in
+        router.setRouterName(StringUtil.filterText(name).strip());
+        return true;
+    }
 
     public static final StreamCodec<RegistryFriendlyByteBuf, RenameRouterFromManager> STREAM_CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC, RenameRouterFromManager::managerPos,

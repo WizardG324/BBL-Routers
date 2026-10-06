@@ -192,12 +192,42 @@ public class ManagerScanner {
         return GlobalPos.of(routerPos.dimension(), target);
     }
 
+    private record Cached(ManagerSnapshot snapshot, long tick) {}
+
+    // A scan walks the loaded chunks around the manager and then the whole connected network, so a manager shared by
+    // several viewers, or a client sending packets as fast as it can, shouldn't repeat it every time. Every packet that
+    // only needs to read the network (the periodic refresh and the permission checks) uses a result up to this old.
+    private static final int CACHE_TICKS = 20;
+    private static final Map<GlobalPos, Cached> CACHE = new HashMap<>();
+
+    public static ManagerSnapshot scanCached(ServerLevel level, BlockPos managerPos) {
+        Cached cached = CACHE.get(GlobalPos.of(level.dimension(), managerPos));
+        long now = level.getGameTime();
+        if (cached != null && now >= cached.tick && now - cached.tick < CACHE_TICKS) return cached.snapshot;
+        return scanFresh(level, managerPos);
+    }
+
+    // Scans again and remembers the result. Used after a change, so the player sees it straight away.
+    public static ManagerSnapshot scanFresh(ServerLevel level, BlockPos managerPos) {
+        ManagerSnapshot snapshot = scan(level, managerPos);
+        long now = level.getGameTime();
+
+        CACHE.put(GlobalPos.of(level.dimension(), managerPos), new Cached(snapshot, now));
+        if (CACHE.size() > 64) CACHE.values().removeIf(entry -> now < entry.tick || now - entry.tick >= CACHE_TICKS);
+
+        return snapshot;
+    }
+
+    public static void clearCache() {
+        CACHE.clear();
+    }
+
     // Whether a loaded router in the manager's dimension is part of its charted network, so packets
     // from the manager screen can only reach routers the player could see in it.
     public static boolean isCharted(ServerLevel level, BlockPos managerPos, BlockPos targetPos) {
         if (!level.isLoaded(targetPos)) return false;
         GlobalPos target = GlobalPos.of(level.dimension(), targetPos);
-        return scan(level, managerPos).nodes().stream()
+        return scanCached(level, managerPos).nodes().stream()
                 .anyMatch(node -> node.pos().equals(target) && node.kind() != Kind.UNLOADED);
     }
 
@@ -252,7 +282,7 @@ public class ManagerScanner {
             importerFlags = importerFlags(importerHost.getImporterCore());
         }
 
-        String name = blockEntity instanceof NamedRouter named ? named.getRouterName() : "";
+        String name = blockEntity instanceof NamedRouter named ? NamedRouter.clean(named.getRouterName()) : "";
 
         return new Node(pos, kind, adjacent, exporterTypes, exporterFlags, importerTypes, importerFlags, working, name);
     }

@@ -2,6 +2,7 @@ package com.benbenlaw.routers.networking.packets;
 
 import com.benbenlaw.routers.Routers;
 import com.benbenlaw.routers.manager.ManagerScanner;
+import com.benbenlaw.routers.manager.ManagerSessions;
 import com.benbenlaw.routers.screen.RouterManagerMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -24,7 +25,10 @@ public record RequestManagerSnapshot(BlockPos blockPos) implements CustomPacketP
             if (!menu.getBlockPos().equals(packet.blockPos)) return;
             if (!(player.level() instanceof ServerLevel level)) return;
 
-            PacketDistributor.sendToPlayer(player, ManagerScanner.scan(level, packet.blockPos));
+            // the screen asks twice a second at most; anything faster is ignored
+            if (!ManagerSessions.allow(player, "request", 10)) return;
+
+            PacketDistributor.sendToPlayer(player, ManagerScanner.scanCached(level, packet.blockPos));
         });
     };
 

@@ -146,8 +146,6 @@ public class ItemTransfer implements TransferModule<ResourceHandler<ItemResource
     }
 
     private interface ItemPredicate {
-        // Returns the max amount of this resource allowed to move, or <= 0 to reject it entirely.
-        // Lets a stock filter cap the move to its remaining headroom instead of only accepting/rejecting.
         int allowedAmount(ItemResource resource);
     }
 

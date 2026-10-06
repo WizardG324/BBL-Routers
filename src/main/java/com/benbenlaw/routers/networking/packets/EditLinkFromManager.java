@@ -4,6 +4,7 @@ import com.benbenlaw.routers.Routers;
 import com.benbenlaw.routers.block.entity.DistributorBlockEntity;
 import com.benbenlaw.routers.block.entity.ExporterBlockEntity;
 import com.benbenlaw.routers.manager.ManagerScanner;
+import com.benbenlaw.routers.manager.ManagerSessions;
 import com.benbenlaw.routers.manager.ManagerSnapshot;
 import com.benbenlaw.routers.manager.ManagerSnapshot.Kind;
 import com.benbenlaw.routers.manager.ManagerSnapshot.Node;
@@ -33,29 +34,36 @@ public record EditLinkFromManager(BlockPos managerPos, GlobalPos exporterPos, Gl
             if (!(player.containerMenu instanceof RouterManagerMenu menu)) return;
             if (!menu.getBlockPos().equals(packet.managerPos)) return;
             if (!(player.level() instanceof ServerLevel level)) return;
-            if (packet.exporterPos.equals(packet.importerPos)) return;
+            if (!ManagerSessions.allow(player, "action", 4)) return;
+            if (!apply(level, packet.managerPos, packet.exporterPos, packet.importerPos, packet.link)) return;
 
-            // both ends have to be in the network the player is looking at
-            ManagerSnapshot snapshot = ManagerScanner.scan(level, packet.managerPos);
-            Optional<Node> exporterNode = find(snapshot, packet.exporterPos);
-            Optional<Node> importerNode = find(snapshot, packet.importerPos);
-            if (exporterNode.isEmpty() || importerNode.isEmpty()) return;
-            if (!exporterNode.get().kind().exports()) return;
-            // a new link needs a loaded importer to point at; removing one may be cleaning up a missing router
-            if (packet.link && !accepts(importerNode.get().kind())) return;
-
-            ServerLevel exporterLevel = level.getServer().getLevel(packet.exporterPos.dimension());
-            if (exporterLevel == null || !exporterLevel.isLoaded(packet.exporterPos.pos())) return;
-            if (!(exporterLevel.getBlockEntity(packet.exporterPos.pos()) instanceof ExporterBlockEntity exporter)) return;
-            if (exporter instanceof DistributorBlockEntity) return;
-
-            // toggleImporterPosition flips the link and updates the importer too, so only call it when it changes something
-            boolean linked = exporter.importerPositions != null && exporter.importerPositions.contains(packet.importerPos);
-            if (linked != packet.link) exporter.toggleImporterPosition(packet.importerPos);
-
-            PacketDistributor.sendToPlayer(player, ManagerScanner.scan(level, packet.managerPos));
+            PacketDistributor.sendToPlayer(player, ManagerScanner.scanFresh(level, packet.managerPos));
         });
     };
+
+    // Links or unlinks one pair. False if either end isn't in the manager's network or the pair can't be linked.
+    public static boolean apply(ServerLevel level, BlockPos managerPos, GlobalPos exporterPos, GlobalPos importerPos, boolean link) {
+        if (exporterPos.equals(importerPos)) return false;
+
+        // both ends have to be in the network the player is looking at
+        ManagerSnapshot snapshot = ManagerScanner.scanCached(level, managerPos);
+        Optional<Node> exporterNode = find(snapshot, exporterPos);
+        Optional<Node> importerNode = find(snapshot, importerPos);
+        if (exporterNode.isEmpty() || importerNode.isEmpty()) return false;
+        if (!exporterNode.get().kind().exports()) return false;
+        // a new link needs a loaded importer to point at; removing one may be cleaning up a missing router
+        if (link && !accepts(importerNode.get().kind())) return false;
+
+        ServerLevel exporterLevel = level.getServer().getLevel(exporterPos.dimension());
+        if (exporterLevel == null || !exporterLevel.isLoaded(exporterPos.pos())) return false;
+        if (!(exporterLevel.getBlockEntity(exporterPos.pos()) instanceof ExporterBlockEntity exporter)) return false;
+        if (exporter instanceof DistributorBlockEntity) return false;
+
+        // toggleImporterPosition flips the link and updates the importer too, so only call it when it changes something
+        boolean linked = exporter.importerPositions != null && exporter.importerPositions.contains(importerPos);
+        if (linked != link) exporter.toggleImporterPosition(importerPos);
+        return true;
+    }
 
     private static Optional<Node> find(ManagerSnapshot snapshot, GlobalPos pos) {
         return snapshot.nodes().stream().filter(node -> node.pos().equals(pos)).findFirst();
